@@ -44,9 +44,6 @@ author:
   location: "Nairobi, Kenya"
   email: "asa.nyaga@gmail.com"
   links:
-    - label: "Email"
-      icon: "fas fa-fw fa-envelope-square"
-      url: "asa.nyaga@gmail.com"
     - label: "Website"
       icon: "fas fa-fw fa-link"
       url: "asanyaga.com"

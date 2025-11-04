@@ -15,7 +15,7 @@ By the end, you will:
 * Implement a basic **agent loop** in Python
 * See how this looop can evolve into a more advanced agent with goals, tools goals and memory
 
-### Before you begin
+### To run the Jupyter notebooks
 * Make sure you have [Python](https://www.python.org/) installed
 * Install and setup [OpenAI Python library]([https://platform.openai.com/docs/libraries). In this tutorial we will be using OpenAI LLM models but you can use any LLM model or provider that you are familiar with since the concepts are not provider specific.
 * Install and setup [Jupyter Notebook](https://jupyter.org/install)
