@@ -32,7 +32,7 @@ In other words:
 
 Here's a simple way to picture it:
 
-![Agent Loop](agent-loop.png)
+![Agent Loop](/assets/images/agent-loop.png)
 
 ## Agent Building Blocks
 Now that we have seen the **Agent Loop** - *Observe -> Think -> Act* let's take a look at the core building blocks that make this work in practice.
@@ -45,7 +45,7 @@ We'll explore each of these in more details later in the series, but here is a s
 These four building blocks work together inside the agent loop. The prompt tells the LLM what to do, the LLM decides an action, tools let it perform that action, and memory helps it learn and adapt from experience.
 
 
-![Agent building blocks](agent-building-blocks.png)
+![Agent building blocks](/assets/images/agent-building-blocks.png)
 
 
 ### The Code Reviewer Assistant
