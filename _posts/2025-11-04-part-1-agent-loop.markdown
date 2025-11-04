@@ -128,6 +128,8 @@ while not goal_complete:
 In the introduction we mentioned that an agent executes tools in a loop until a task is done. In our first example above we can think of our agent as having just one loop because it has a simple task and one tool action `print()` after which the task is complete.  
 In later parts of the series we will see how to implement multiple loops with multiple tools
 
+**Full Source Code Here:**  [Agent Loop Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-1-agent-loop.ipynb)
+
 ### What's next
 In the next part of the series shall see how to define tools and configure the code review agent to make decisions about which tool to use.
 
