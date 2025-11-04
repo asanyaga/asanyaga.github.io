@@ -3,15 +3,14 @@ title:  "From Prompts to Agents: Understanding the AI Agent Loop"
 date:   2025-11-03 17:19:51 +0300
 categories: jekyll update
 ---
-# From Prompts to Agents: Understanding the AI Agent Loop
 
 ## Introduction
-If you have worked with tools like ChaptGTP or LangChain you've probably heard the term **AI Agent**, often mentioned but not always cleawrly explained. In this tutorial series, we will demystify waht AI agents really are. 
+If you have worked with tools like ChaptGTP or LangChain you've probably heard the term **AI Agent**, often mentioned but not always clearly explained. In this tutorial series, we will demystify what AI agents really are. 
 
-In this first part of the series, we will start with the core concept, the **AI agent loop** - the core idea behind how intelligent systems *observe, think and act.*  
-We will also take a look at the basic building blocks of AI agents which we will build step by step throughout the series.
+In this first part of the series, we will start with the core concept, the **AI agent loop** - the core idea behind how intelligent systems *observe, think, and act.*  
+We will also take a look at the basic building blocks of AI agents, which we will build step by step throughout the series.
 
-By the end you will:
+By the end, you will:
 * Understand the observation-thought-action cycle
 * Implement a **basic agent loop in Python**
 * See how this looop can evolve into a more advanced agent with goals, tools goals and memory
@@ -44,6 +43,7 @@ We'll explore each of these in more details later in the series, but here is a s
 
 These four building blocks work together inside the agent loop. The prompt tells the LLM what to do, the LLM decides an action, tools let it perform that action, and memory helps it learn and adapt from experience.
 
+Agent building blocks:
 
 ![Agent building blocks](/assets/images/agent-building-blocks.png)
 
@@ -126,7 +126,7 @@ while not goal_complete:
 ```
 
 In the introduction we mentioned that an agent executes tools in a loop until a task is done. In our first example above we think of our agent as having just one loop because it has a simple task and just one tool `print()`.  
-I later parts of the series we will see how to implement multiple loops with multiple tools
+In later parts of the series we will see how to implement multiple loops with multiple tools
 
 ### What's next
 In the next part of the series shall see how to define tools and configure the code review agent to make decisions about which tool to use.
