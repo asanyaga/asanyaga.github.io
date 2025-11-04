@@ -36,7 +36,26 @@ plugins:
   - jekyll-feed
   - "jekyll-remote-theme"
   - "jekyll-include-cache"    # Required by minimal-mistakes
-
+# Author information
+author:
+  name: "Asa Nyaga"
+  avatar: "/assets/images/bio-photo.jpg"  # path to your photo
+  bio: "AI Engineer | Tech Enthusiast | Blogger"
+  location: "Nairobi, Kenya"
+  email: "asa.nyaga@gmail.com"
+  links:
+    - label: "Email"
+      icon: "fas fa-fw fa-envelope-square"
+      url: "asa.nyaga@gmail.com"
+    - label: "Website"
+      icon: "fas fa-fw fa-link"
+      url: "asanyaga.com"
+    - label: "Twitter"
+      icon: "fab fa-fw fa-twitter-square"
+      url: "https://x.com/asanyaga"
+    - label: "GitHub"
+      icon: "fab fa-fw fa-github"
+      url: "https://github.com/asanyaga"
 # Defaults
 defaults:
   # _posts
