@@ -12,12 +12,12 @@ We will also take a look at the basic building blocks of AI agents, which we wil
 
 By the end, you will:
 * Understand the observation-thought-action cycle
-* Implement a **basic agent loop in Python**
+* Implement a basic **agent loop** in Python
 * See how this looop can evolve into a more advanced agent with goals, tools goals and memory
 
 ### Before you begin
 * Make sure you have [Python](https://www.python.org/) installed
-* Install and setup [OpenAI Python library]([https://platform.openai.com/docs/libraries). In this tutorial we will be using Openai LLM models but you can use any LLM model or provider that you are familiar with since the concepts are not provider specific.
+* Install and setup [OpenAI Python library]([https://platform.openai.com/docs/libraries). In this tutorial we will be using OpenAI LLM models but you can use any LLM model or provider that you are familiar with since the concepts are not provider specific.
 * Install and setup [Jupyter Notebook](https://jupyter.org/install)
 
 ## What is an AI Agent
@@ -29,7 +29,7 @@ An agent is a system that:
 In other words:
 > **Agent = Observe -> Think -> Act**
 
-Here's a simple way to picture it:
+*Agent loop:*
 
 ![Agent Loop](/assets/images/agent-loop.png)
 
@@ -43,7 +43,7 @@ We'll explore each of these in more details later in the series, but here is a s
 
 These four building blocks work together inside the agent loop. The prompt tells the LLM what to do, the LLM decides an action, tools let it perform that action, and memory helps it learn and adapt from experience.
 
-Agent building blocks:
+*Agent building blocks:*
 
 ![Agent building blocks](/assets/images/agent-building-blocks.png)
 
@@ -125,7 +125,7 @@ while not goal_complete:
 
 ```
 
-In the introduction we mentioned that an agent executes tools in a loop until a task is done. In our first example above we think of our agent as having just one loop because it has a simple task and just one tool `print()`.  
+In the introduction we mentioned that an agent executes tools in a loop until a task is done. In our first example above we can think of our agent as having just one loop because it has a simple task and one tool action `print()` after which the task is complete.  
 In later parts of the series we will see how to implement multiple loops with multiple tools
 
 ### What's next
