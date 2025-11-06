@@ -4,7 +4,7 @@ date:   2025-11-03 17:19:51 +0300
 categories: agents ai
 ---
 ## Introduction
-In our previous tutorials, we built a code review agent that uses tools to read files and analyze code. But there's a critical limitation:**our agent has no memory between interactions**. Every time we call `think()`, the agent starts fresh, with no knowledge of previous conversations or actions.
+In our previous tutorial, we built a code review agent that uses tools to read files and analyze code. But there's a critical limitation:**our agent has no memory between interactions**. Every time we call `think()`, the agent starts fresh, with no knowledge of previous conversations or actions.
 
 Imagine asking the agent to "review the last file I mentioned" or "compare this code to what you saw earlier". Without memory it cant do either. In this article, we'll transform our stateless agent into one that remembers conversations, learns from interactions, and manages its memory efficiently.
 
@@ -37,6 +37,7 @@ class CodeReviewAgentWithSTMemory:
         self.model = model
         self.conversation_history = [] # Short-term memory
 ```
+
 2. **Update** `think()` to add user input and LLM responses to `conversation_history` and include the conversation history in the prompt
 ```python
     def think(self, user_input:str):
@@ -75,6 +76,7 @@ class CodeReviewAgentWithSTMemory:
 
         return decision
 ```
+
 3. **Update** `act()` to add tool call results to conversation history
 ```python
     def act(self, decision:str):
@@ -105,6 +107,8 @@ class CodeReviewAgentWithSTMemory:
 * **`conversation_history` list**: Stores all messages as dictionaries with `role` and `content`
 * **Messages passed to LLM**: Instead of a single prompt string, we send the entire conversation
 * **Tool call result stored**: After each action we append the result to history so the agent can reference it
+
+### Set up tools
 
 ```python
 # Set up the tools and tool registry
