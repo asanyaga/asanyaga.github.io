@@ -28,8 +28,8 @@ Real world conversations have context. Our agent needs memory to maintain that c
 
 ### Implementation: Adding a Message Buffer
 Let's add a simple conversation history to our previous agent [CodeReveiwAgentWithTools](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_tools.ipynb)
-1. **Inititalize** a list for conversation history
 
+1. **Inititalize** a list for conversation history
 ```python
 class CodeReviewAgentWithSTMemory:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini"):
