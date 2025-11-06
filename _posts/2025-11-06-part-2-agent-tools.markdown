@@ -97,7 +97,7 @@ class ToolRegistry:
 ```
 
 ### Step 3: Agent with tool use
-We will build on the CodeReview agent from the agent loop tutorial [CodeReviewAgent](/https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent.ipynb)  
+We will build on the CodeReview agent from the agent loop tutorial [CodeReviewAgent](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent.ipynb)
 Most recent LLM models have support for *function calling*. Function calling is a capability of language models that enables them to output text in a structured format suitable for executing a function or code.
 
 **NOTE:**  Not all LLM models have function calling and structured output capabilities. For models that dont support function calling, this capability is achieved with well structured prompts and instructions.
