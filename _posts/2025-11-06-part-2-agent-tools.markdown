@@ -4,7 +4,6 @@ date:   2025-11-03 17:19:51 +0300
 categories: agents ai
 ---
 
-
 ## Introduction
  So far, our **AI Code Assistant** has learned how to think - it can read code and make intelligent suggestions.
 
