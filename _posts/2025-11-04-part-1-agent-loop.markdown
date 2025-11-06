@@ -1,7 +1,7 @@
 ---
 title:  "From Prompts to Agents: Understanding the AI Agent Loop"
 date:   2025-11-03 17:19:51 +0300
-categories: jekyll update
+categories: agents ai
 ---
 ## Introduction
 If you have worked with tools like ChaptGTP or LangChain you've probably heard the term **AI Agent**, often mentioned but not always clearly explained. In this tutorial series, we will demystify what AI agents really are. 
