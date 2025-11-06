@@ -18,7 +18,7 @@ categories: agents ai
  * Dynamically decide what to do,
  * And execute the right tool to complete the job
 
- ## Concept: Tools are Actions
+## Concept: Tools are Actions
  In the real worlds, a human code reviewer might:
  * Open files
  * Edit code
@@ -26,7 +26,7 @@ categories: agents ai
 
 
  LLMs cannot directly do that.
- With tool calling, we can connect them to real Python functions that perform these tasks safely.
+ With tool calling, we can connect them to real Python functions that perform these tasks.
  Tools are just code functions that the LLM can request via a formatted response to be executed. LLMs cannot directly execute this code
 
 ## The Tool Registry
@@ -97,7 +97,7 @@ class ToolRegistry:
 ```
 
 ### Step 3: Agent with tool use
-We will build on the CodeReview agent from the agent loop tutorial [CodeReviewAgent](/code_review_agent.ipynb)  
+We will build on the CodeReview agent from the agent loop tutorial [CodeReviewAgent](/https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent.ipynb)  
 Most recent LLM models have support for *function calling*. Function calling is a capability of language models that enables them to output text in a structured format suitable for executing a function or code.
 
 **NOTE:**  Not all LLM models have function calling and structured output capabilities. For models that dont support function calling, this capability is achieved with well structured prompts and instructions.
