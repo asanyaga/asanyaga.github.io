@@ -24,7 +24,7 @@ categories: agents ai
  * Run tests
 
  LLMs cannot directly do that.  
- With tool calling, we can connect them to code functions, daabase queries or API calls that perform these tasks.  
+ With tool calling, we can connect them to code functions, database queries or API calls that perform these tasks.  
  Tools are just code functions that the LLM can request via a formatted response to be executed. LLMs cannot directly execute this code
 
 ## The Tool Registry
