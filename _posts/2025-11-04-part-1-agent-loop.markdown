@@ -12,7 +12,7 @@ We will also take a look at the basic building blocks of AI agents, which we wil
 In this tutorial, you will:
 * Understand the observation-thought-action cycle
 * Implement a basic **agent loop** in Python
-* See how this loop can evolve into a more advanced agent with goals, tools goals and memory
+* See how this loop can evolve into a more advanced agent with goals, tools and memory
 
 ### To run the Jupyter notebooks
 * Make sure you have [Python](https://www.python.org/) installed
@@ -36,9 +36,9 @@ In other words:
 Now that we have seen the **Agent Loop** - *Observe -> Think -> Act* let's take a look at the core building blocks that make this work in practice.
 We'll explore each of these in more detail later in the series, but here is a simple overview to get started:
 1. **Prompt:** - This is how we communicate the goal and situation to the agent. It includes goals, instruction and context to help the agent reason effectively.
-2. **LLM:** The *brain* of the agent. It processes the prompt and context, reasons through the situation, and decides what to do next by producing natural language outputs or strucutred actions.
-3. **Tools:** Tools allow the agent to go beyond text; to fetch data, run code, search the web, send emails, or intereact with APIs. Tool use connects LLM reasoning ato real world action.
-4. **Memory:** Memory lets the agent recall instructions, past experiences, conversations or actions so that it can act more consistently and intelligently over time.
+2. **LLM:** The *brain* of the agent. It processes the prompt and context, reasons through the situation, and decides what to do next by producing natural language outputs or structured actions.
+3. **Tools:** Tools allow the agent to go beyond text; to fetch data, run code, search the web, send emails, or interact with APIs. Tool use connects LLM reasoning to real world action.
+4. **Memory:** Memory lets the agent recall instructions, past experiences, conversations or actions, so that it can act more consistently and intelligently over time.
 
 These four building blocks work together inside the agent loop. The prompt tells the LLM what to do, the LLM decides an action, tools let it perform that action, and memory helps it learn and adapt from experience.
 

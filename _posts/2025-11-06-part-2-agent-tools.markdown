@@ -23,14 +23,13 @@ categories: agents ai
  * Edit code
  * Run tests
 
-
- LLMs cannot directly do that.
- With tool calling, we can connect them to real Python functions that perform these tasks.
+ LLMs cannot directly do that.  
+ With tool calling, we can connect them to code functions, daabase queries or API calls that perform these tasks.  
  Tools are just code functions that the LLM can request via a formatted response to be executed. LLMs cannot directly execute this code
 
 ## The Tool Registry
 As we have seen above, tools are really just functions that we call after giving it a task and asking it to determine the best function to use.  
-The tools registry is simply a list of callable functions that the LLM has access to. We will give our agent multiple tools, like:
+The tools registry is a list of callable functions that the LLM has access to. We will give our agent some tools, like:
 
 
  | Tool Name      | Description                      | Function                  |
@@ -38,7 +37,7 @@ The tools registry is simply a list of callable functions that the LLM has acces
 | `read_file`    | Read code from a file            | `def read_file(path)`      |
 | `analyze_code` | Analyze a string of code         | LLM reasoning via API call |
 
-The agent decides; "Do I need to read a file, test or analyze the given snippet?"  
+The agent decides; "Do I need to read a file, or analyze the given snippet?"  
 We are keeping our tools simple here so that we focus on the concepts.
 
 Let's go ahead and build some tools, and give them to the code assistant that decides which tool to use based on user instruction, and run the tool.
