@@ -100,9 +100,9 @@ class CodeReviewAgentWithSTMemory:
             return error_msg
 ```
 ### What changed
-1. **`conversation_history` list**: Stores all messages as dictionaries with `role` and `content`
-2. **Messages passed to LLM**: Instead of a single prompt string, we send the entire conversation
-3. **Tool call result stored**: After each action we append the result to history so the agent can reference it
+* **`conversation_history` list**: Stores all messages as dictionaries with `role` and `content`
+* **Messages passed to LLM**: Instead of a single prompt string, we send the entire conversation
+* **Tool call result stored**: After each action we append the result to history so the agent can reference it
 
 
 ```python
