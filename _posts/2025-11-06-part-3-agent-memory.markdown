@@ -28,7 +28,7 @@ Real world conversations have context. Our agent needs memory to maintain that c
 
 ### Implementation: Adding a Message Buffer
 Let's add a simple conversation history to our previous agent [CodeReveiwAgentWithTools](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_tools.ipynb)
-1. Inititalize a list for conversation history
+1. **Inititalize** a list for conversation history
 ```python
 class CodeReviewAgentWithSTMemory:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini"):
@@ -36,7 +36,7 @@ class CodeReviewAgentWithSTMemory:
         self.model = model
         self.conversation_history = [] # Short-term memory
 ```
-2. Update `think()` to add user input and LLM responses to `conversation_history` and include the conversation history in the prompt
+2. **Update** `think()` to add user input and LLM responses to `conversation_history` and include the conversation history in the prompt
 ```python
     def think(self, user_input:str):
         """LLM decides which tool to use with conversation context."""
@@ -74,7 +74,7 @@ class CodeReviewAgentWithSTMemory:
 
         return decision
 ```
-3. Update `act()` to add tool call results to conversation history
+3. **Update** `act()` to add tool call results to conversation history
 ```python
     def act(self, decision:str):
         """Execute the chosen tool and record the result."""
@@ -99,6 +99,7 @@ class CodeReviewAgentWithSTMemory:
             })
             return error_msg
 ```
+
 ### What changed
 * **`conversation_history` list**: Stores all messages as dictionaries with `role` and `content`
 * **Messages passed to LLM**: Instead of a single prompt string, we send the entire conversation
@@ -312,7 +313,7 @@ class CodeReviewAgentWithLTMemory:
         else:
             self.long_term_memory = {}
 ```
-7. Update the prompt's system message to include the long term memory as `relevant_memories`
+7. **Update** the prompt's system message to include the long term memory as `relevant_memories`
 ```python
     def think(self, user_input:str):
         """LLM decides which tool to use with both short term and long term context."""
