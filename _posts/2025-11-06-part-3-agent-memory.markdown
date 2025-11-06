@@ -489,8 +489,8 @@ As conversations grow so does the memory footprint. A 50 turn conversation might
 * When conversation history exceeds a token threshold
 * When moving to a new topic or task
 
-Lte's implement a simple periodic summarization where we use an LLM to generate a summary from the conversation history and trim the conversation to the last few turns.  
-1. Add `summarize_after` parameter to agent initialization to set after how many messages to summarize
+Let's implement a simple periodic summarization where we use an LLM to generate a summary from the conversation history and trim the conversation to the last few turns.  
+1. **Add** `summarize_after` parameter to agent initialization to set after how many messages to summarize
 ```python
 class CodeReviewAgentWithSTMemorySummarization:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini",memory_file="agent_memory.json",summarize_after=10):
@@ -499,8 +499,8 @@ class CodeReviewAgentWithSTMemorySummarization:
         self.summarize_after = summarize_after # Number of conversation turns after which to summarize
         self.turns_since_summary = 0 # Track number of turns sinse last summary
 ```
-2. Add `conversation_summary` to keep the conversation summary
-3. Add `summarize_history()`: Periodically use LLM to summarize conversation history when the `summarize_after` message limit is reached
+2. **Add** `conversation_summary` to keep the conversation summary
+3. **Add** `summarize_history()`: Periodically use LLM to summarize conversation history when the `summarize_after` message limit is reached
 ```python
     def summarize_history(self):
         """Use LLM to summarize the conversation so far."""
@@ -525,7 +525,6 @@ class CodeReviewAgentWithSTMemorySummarization:
 
         self.conversation_history = recent_turns
         self.turns_since_summary = 0
-
 ```
 4. Include the `conversation_summary` in the system prompt
 ```python
@@ -557,7 +556,7 @@ class CodeReviewAgentWithSTMemorySummarization:
         # ...rest of think code...
 ```
 
-
+### CodeReviewAgentWithSTMemorySummarization
 ```python
 class CodeReviewAgentWithSTMemorySummarization:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini",memory_file="agent_memory.json",summarize_after=10):
@@ -966,7 +965,9 @@ class CodeReviewAgentWithContext:
 ### Notes on Memory
 * We have shown storing long term memory and retrieving all of it. In practice, with large memory sizes, it may be more efficient to store in a e.g. a vector store or database and use retrieval based on user input to fetch long term memory that is relevant to the agent task.
 * In our example we showed conversation history as lasting only for the session. It may be useful for later reference to also persist chat history. This stored conversation history would not be considered part of the agent's long term memory to be used during task sessions.
+
 **Full Source Code Here:**  [Agent Tasks Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-3-agent-memory.ipynb)
+
 ## What's next
 That concludes the first part of the series where we implemented the simple building blocks of AI agents.
 
