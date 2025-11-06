@@ -1,5 +1,5 @@
 ---
-title:  "Adding Memory to our Agent: Short-Term and Long-Term memory in practice"
+title:  "Adding Memory to your Agent: Short-Term and Long-Term memory in practice"
 date:   2025-11-03 17:19:51 +0300
 categories: agents ai
 ---
