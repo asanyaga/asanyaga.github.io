@@ -726,11 +726,11 @@ For this reason we need to manage the context window limits.
 ### Implement Token Aware Trimming
 Below is a simple implementation of token aware trimming
 
-1. Token counting. We use `tiktoken` to accurately count tokens
+1. **Token counting:** We use `tiktoken` to accurately count tokens
 ```python
 import tiktoken # OpenAI token counting library
 ```
-2. Add `trim_history_to_fit()`: Removes the oldest messages when over budget. This is called every time the agent calls `think()`
+2. **Add** `trim_history_to_fit()`: Removes the oldest messages when over budget. This is called every time the agent calls `think()`
 ```python
     def trim_history_to_fit(self, system_message:str):
         """Remove old messages until we fit within the token budget"""
@@ -749,7 +749,7 @@ import tiktoken # OpenAI token counting library
 
         return total_tokens
 ```
-3. Update `think()` to trim history
+3. **Update** `think()` to trim history
 ```python
     def think(self, user_input:str):
         """LLM decides which tool to use with both short term and long term context."""
@@ -781,7 +781,7 @@ import tiktoken # OpenAI token counting library
 
         #...existing think code...
 ```
-3. Add `max_context_tokens` to configure token limits
+3. **Add** `max_context_tokens` to configure token limits
 ```python
 class CodeReviewAgentWithTrimming:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini",memory_file="agent_memory.json",summarize_after=10,max_context_tokens=6000):
