@@ -27,7 +27,7 @@ Real world conversations have context. Our agent needs memory to maintain that c
 **Short-term memory** stores the recent conversation between user and agent. This is the foundation of a multi-turn dialogue.
 
 ### Implementation: Adding a Message Buffer
-Let's add a simple conversation history to our agent [CodeReveiwAgentWithTools](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_tools.ipynb)
+Let's add a simple conversation history to our previous agent [CodeReveiwAgentWithTools](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_tools.ipynb)
 1. Inititalize a list for conversation history
 ```python
 class CodeReviewAgentWithSTMemory:
@@ -74,7 +74,7 @@ class CodeReviewAgentWithSTMemory:
 
         return decision
 ```
-* Update `act()` to add tool call results to conversation history
+3. Update `act()` to add tool call results to conversation history
 ```python
     def act(self, decision:str):
         """Execute the chosen tool and record the result."""
