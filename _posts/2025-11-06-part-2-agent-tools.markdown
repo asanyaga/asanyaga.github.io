@@ -312,7 +312,7 @@ result=agent_hil.act(decision=decision)
 print(f"Tool Call Result:\n{result}")
 ```
 
-**Full Source Code Here:**  [Agent Loop Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-2-agent-tools.ipynb)
+**Full Source Code Here:**  [Agent Tasks Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-2-agent-tools.ipynb)
 
 ### What's next
 In the next part of this series we will give our agent memory.
