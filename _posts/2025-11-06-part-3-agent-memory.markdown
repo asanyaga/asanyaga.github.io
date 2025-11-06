@@ -245,7 +245,7 @@ print(f"Second action result: {result2}")
 print(f"Chat history : {agent_with_st_memory.conversation_history}")
 ```
 
-***Key insight:** The LLM sees the full conversation each time, allowing it to understand context and references like "that code" or "the last file"
+**Key insight:** The LLM sees the full conversation each time, allowing it to understand context and references like "that code" or "the last file"
 
 ## Long-term Memory: Persistent Knowledge
 Short-term memory is exists only during a session. Long term memory persists across sessions and stores important information the agent should remember 
@@ -311,7 +311,6 @@ class CodeReviewAgentWithLTMemory:
                 print(f"Warning: Could not load memory from {self.memory_file}: {e}")
         else:
             self.long_term_memory = {}
-
 ```
 7. Update the prompt's system message to include the long term memory as `relevant_memories`
 ```python
@@ -336,7 +335,6 @@ class CodeReviewAgentWithLTMemory:
                 """
         #... existing code
 ```
-
 
 ```python
 import json
