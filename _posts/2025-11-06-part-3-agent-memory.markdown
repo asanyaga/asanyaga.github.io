@@ -29,6 +29,7 @@ Real world conversations have context. Our agent needs memory to maintain that c
 ### Implementation: Adding a Message Buffer
 Let's add a simple conversation history to our previous agent [CodeReveiwAgentWithTools](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_tools.ipynb)
 1. **Inititalize** a list for conversation history
+
 ```python
 class CodeReviewAgentWithSTMemory:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini"):
@@ -105,7 +106,6 @@ class CodeReviewAgentWithSTMemory:
 * **Messages passed to LLM**: Instead of a single prompt string, we send the entire conversation
 * **Tool call result stored**: After each action we append the result to history so the agent can reference it
 
-
 ```python
 # Set up the tools and tool registry
 import os
@@ -150,6 +150,7 @@ class ToolRegistry:
 
 ```
 
+### CodeReviewAgentWithSTMemory
 
 ```python
 import json
@@ -336,6 +337,7 @@ class CodeReviewAgentWithLTMemory:
                 """
         #... existing code
 ```
+### CodeReviewAgentWithLTMemory
 
 ```python
 import json
