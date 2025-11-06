@@ -12,7 +12,7 @@ We will also take a look at the basic building blocks of AI agents, which we wil
 In this tutorial, you will:
 * Understand the observation-thought-action cycle
 * Implement a basic **agent loop** in Python
-* See how this looop can evolve into a more advanced agent with goals, tools goals and memory
+* See how this loop can evolve into a more advanced agent with goals, tools goals and memory
 
 ### To run the Jupyter notebooks
 * Make sure you have [Python](https://www.python.org/) installed
