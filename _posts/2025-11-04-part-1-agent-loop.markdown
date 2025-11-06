@@ -4,12 +4,12 @@ date:   2025-11-03 17:19:51 +0300
 categories: agents ai
 ---
 ## Introduction
-If you have worked with tools like ChaptGTP or LangChain you've probably heard the term **AI Agent**, often mentioned but not always clearly explained. In this tutorial series, we will demystify what AI agents really are. 
+You have probably heard the term **AI Agent**, often mentioned, but not always clearly explained. In this tutorial series, we will demystify what AI agents really are. 
 
-In this first part of the series, we will start with the core concept, the **AI agent loop** - the core idea behind how intelligent systems *observe, think, and act.*  
+We will start with the concept of the **AI agent loop** - the core idea behind how intelligent systems *observe, think, and act.*  
 We will also take a look at the basic building blocks of AI agents, which we will build step by step throughout the series.
 
-By the end, you will:
+In this tutorial, you will:
 * Understand the observation-thought-action cycle
 * Implement a basic **agent loop** in Python
 * See how this looop can evolve into a more advanced agent with goals, tools goals and memory
@@ -131,5 +131,3 @@ In later parts of the series we will see how to implement multiple loops with mu
 
 ### What's next
 In the next part of the series shall see how to define tools and configure the code review agent to make decisions about which tool to use.
-
-
