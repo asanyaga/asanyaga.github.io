@@ -971,15 +971,15 @@ class CodeReviewAgentWithContext:
 ```
 
 ### Notes on Memory
-* We have shown storing long term memory and retrieving all of it.  
-In practice, with large memory sizes, it may be more efficient to store the memory in a database and use queries to retrieve lon term memory that is relevant to the agent's task.
+* We have demonstrated storing long term memory and retrieving all of it.  
+In practice, with large memory sizes, it may be more efficient to store the memory in a database and use queries to retrieve long term memory that is relevant to the agent's task.
 * In our example we showed conversation history as lasting only for the session. It may be useful for later reference to also persist chat history. This stored conversation history would not be considered part of the agent's long term memory to be used during task sessions.
 
 **Full Source Code Here:**  [Agent Memory Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-3-agent-memory.ipynb)
 
 ## What's next
-That concludes the part of the series where we have implemented the simple building blocks of AI agents.
+So far we have implemented the building blocks of AI agents.
 
-In the next part of the series we will look at more advanced patterns such as routing, planning and orchestration and multi agent workflows. 
+In the next part of the series we will look at more advanced patterns such as planning, routing, and multi agent workflows. 
 
-We will also start to dive deeper into the practical considerations for deploying real world agents such as evaluating agents, observability, guardrails and security.
+We will also start to explore the practical considerations for deploying real world agents such as observability, evaluating agents,guardrails and security.
