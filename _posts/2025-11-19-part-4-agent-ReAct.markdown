@@ -618,7 +618,7 @@ agent = CodeReviewAgentReAct(tools_registry=tool_registry)
 agent.run(user_query="Review the code in sample.py and fix any issues you find")
 ```
 
-**Full Source Code Here:**  [Agent Memory Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-4-agent-ReAct.ipynb)
+**Full Source Code Here:**  [ReAct Agent Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-4-agent-ReAct.ipynb)
 
 ## What's next
 In this tutorial we have implemented a simple ReAct agent that 'thinks' about what actions to take based on the input that it's been given.
