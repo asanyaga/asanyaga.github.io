@@ -980,6 +980,6 @@ In practice, with large memory sizes, it may be more efficient to store the memo
 ## What's next
 So far we have implemented the building blocks of AI agents.
 
-In the next part of the series we will look at more advanced patterns such as planning, routing, and multi agent workflows. 
+In the next part of the series we will explore more advanced patterns such as planning, routing, and multi agent workflows. 
 
-We will also start to explore the practical considerations for deploying real world agents such as observability, evaluating agents,guardrails and security.
+We will also start to explore the practical considerations of deploying real world agents such as observability, agent evaluation, guardrails, and security.
