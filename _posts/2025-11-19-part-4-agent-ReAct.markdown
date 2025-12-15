@@ -16,8 +16,8 @@ The **ReAct**(Reasoning and Acting) pattern is a powerful pattern that combines 
 * **Observation** The result of the action (tool output) is returned to the agent, serving as the observation for the next turn.
 
 ### Why Reasoning is Essential for Agent Success
-* **Self-correction**: Reflection allows the agent to recognize when a tool call failed or when the output didn't align with the goal.
-* **Plan Adjustment**: The agent can assess the progress of the plan and modify its approach dynamically. For instance if `analyze_code` suggests a fix, the reflection step can verify that the suggested fix actually addresses the original problem.
+* **Self-correction**: Allows the agent to recognize when a tool call failed or when the output didn't align with the goal.
+* **Plan Adjustment**: The agent can assess the progress of the plan and modify its approach dynamically. For instance if `analyze_code` suggests a fix, the reasoning step can verify that the suggested fix actually addresses the original problem.
 * **Increased Robustness**: By incorporating a dedicated step to evaluate its outputs, the agent becomes less prone to "hallucination" and its responses are more grounded in real world tool outputs.
 
 
@@ -41,190 +41,10 @@ def patch_file(file_path:str, content: str) -> str:
 
 
 ### The Agent code so far
-We will make changes to this agent code to demonstrate a simple implementation of the ReAct pattern
+We will make changes to this agent code to demonstrate a simple implementation of the ReAct pattern. [CodeReviewAgentWithMemory](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_context.ipynb)
 
-```python
-import tiktoken # OpenAI token counting library
-
-class CodeReviewAgent:
-    def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini",memory_file="agent_memory.json",summarize_after=10,max_context_tokens=6000):
-        self.tools = tools_registry
-        self.model = model
-        self.conversation_history = [] # Short-term memory
-        self.memory_file = memory_file
-        self.load_long_term_memory() # Long-term memory (key-value store)
-        self.conversation_summary = "" # Summarized conversation history
-        self.summarize_after = summarize_after
-        self.turns_since_summary = 0
-        self.max_context_tokens = max_context_tokens
-
-        # Initialize tokenizer for the model
-        try:
-            self.tokenizer = tiktoken.encoding_for_model(model)
-        except:
-            self.tokenizer = tiktoken.get_encoding("cl100k_base")
-
-    def count_tokens(self, text:str) -> int:
-        """Count tokens in a string"""
-        return len(self.tokenizer.encode(text))
-    
-    def trim_history_to_fit(self, system_message:str):
-        """Remove old messages until we fit within the token budget"""
-
-        # Count tokens in system message
-        fixed_tokens = self.count_tokens(system_message)
-
-        # Count tokens in conversation history
-        history_tokens = sum([self.count_tokens(msg["content"]) for msg in self.conversation_history])
-
-        total_tokens = fixed_tokens + history_tokens
-
-        while total_tokens > self.max_context_tokens and len(self.conversation_history) > 2:
-            removed_msg = self.conversation_history.pop(0)
-            total_tokens -= self.count_tokens(removed_msg["content"])
-
-        return total_tokens
-
-
-    def summarize_history(self):
-        """Use LLM to summarize the conversation so far."""
-        if len(self.conversation_history) < 3:
-            return
-        
-        history_text = "\n".join([f"{msg["role"]}:{msg["content"]}" for msg in self.conversation_history])
-
-        summary_prompt = f"""Summarize this conversation in 3-4 sentences,
-        preserving key fact, decisions, and actions taken:
-        {history_text}
-
-        Previous Summary: {self.conversation_summary or 'None'}
-        """
-
-        response = openai.responses.create(model=self.model, input=[{"role":"user","content":summary_prompt}])
-
-        self.conversation_summary = response.output_text
-
-        # Keep only the last few turns + the summary
-        recent_turns = self.conversation_history[-4:] # Keep the last 4 messages (2 user/assistant exchanges)
-
-        self.conversation_history = recent_turns
-        self.turns_since_summary = 0
-
-
-    def remember(self, key:str, value: str):
-        """Retrieve information from long term memory."""
-        self.long_term_memory[key] = value
-        self.save_long_term_memory()
-    
-    def recall(self,key:str) -> str:
-        """Retrieve information from long term memory"""
-        return self.long_term_memory.get(key,"No memory found for this key.")
-    
-    def get_relevant_memories(self) -> str:
-        """Format long term memories for inclusion in prompts."""
-        if not self.long_term_memory:
-            return "No stored memories"
-        
-        memories = "\n".join([f"- {k}:{v}" for k, v in self.long_term_memory.items()])
-        return f"Relevant memories:\n{memories}"
-    
-    def save_long_term_memory(self):
-        """Persist long term memory to JSON file"""
-        try:
-            with open(self.memory_file,"w") as f:
-                json.dump(self.long_term_memory,f,indent=2)
-        except Exception as e:
-            print(f"Warning: Could not save memory to {self.memory_file}:  {e}")
-
-    def load_long_term_memory(self):
-        """Load long term memory from JSON file"""
-        if os.path.exists(self.memory_file):
-            try:
-                with open(self.memory_file, 'r') as f:
-                    self.long_term_memory = json.load(f)
-                print(f"Loaded {len(self.long_term_memory)} memories from {self.memory_file}")
-            except Exception as e:
-                print(f"Warning: Could not load memory from {self.memory_file}: {e}")
-        else:
-            self.long_term_memory = {}
-
-    def think(self, user_input:str):
-        """LLM decides which tool to use with both short term and long term context."""
-        # Add user message to history
-        self.conversation_history.append({"role":"user","content":user_input})
-
-        self.turns_since_summary += 1
-
-        # Check if we should summarize
-        if self.turns_since_summary >= self.summarize_after:
-            self.summarize_history()
-
-        #Include long term memory & summary in system context
-        system_message_context = f"""You are a code assistant with access to these tools:
-                - read_file(filepath)
-                - analyze_code(code)
-
-                {self.get_relevant_memories()}
-
-                Conversation Summary: {self.conversation_summary or 'This is the start of the conversation'}
-
-                Decide which tool to use based on the conversation, conversation summary and relevant memories.
-                Reply ONLY with the tool name and argument.
-                Examples: read_file("main.py") or analyze_code("def foo():pass")
-
-                """
-
-        self.trim_history_to_fit(system_message_context)
-        
-        # Build prompt with system instructions
-        messages = [
-            {
-                "role":"system",
-                "content":system_message_context
-            }
-        ] + self.conversation_history
-
-        response = openai.responses.create(model=self.model, input=messages)
-
-        decision = response.output_text
-
-        # Add assistant's decision to conversation history
-        self.conversation_history.append({
-            "role":"assistant",
-            "content": decision
-        })
-
-        return decision
-    
-    def act(self, decision:str):
-        """Execute the chosen tool and record the result."""
-        try:
-            if "(" in decision and ")" in decision:
-                name, arg = decision.split("(",1)
-                arg = arg.strip(")'\"")
-                result = self.tools.call(name.strip(),arg)
-            else:
-                result = self.tools.call(decision)
-
-            #Store tool call result in conversation history
-            self.conversation_history.append({
-                "role":"system",
-                "content":f"Tool result: {result}"
-            })
-
-            return result
-        except Exception as e:
-            error_msg = f"Error executing tool: {e}"
-            self.conversation_history.append({
-                "role":"system",
-                "content": error_msg
-            })
-            return error_msg
-
-```
 
 ### Set up the tools
-
 
 ```python
 from typing import Callable, Dict
@@ -281,14 +101,14 @@ class ToolRegistry:
 ```
 
 ### Implement the ReAct Agent
-* Add a `run()` method to manage the think, reflect, act loop
+* Add a `run()` method to manage the observe, reason, act loop
 ```python
     def run(self, user_query:str, max_iterations=3):
         """
-        Main execution loop with reflection.
+        Main execution loop with reasoning.
         Args:
             user_query: The user's request
-            max_iterations: Maxumum number of think-act-reflect cycles. this is to avoid the agent getting stuck in a loop.
+            max_iterations: Maxumum number of reason-act cycles. this is to avoid the agent getting stuck in a loop.
         
         Returns:
             Final response string
@@ -327,7 +147,7 @@ class ToolRegistry:
 ```
 * Update the `system_message_context` prompt in `think()` to implement the ReAct pattern
 * The ReAct pattern is implemented by a prompt engineering technique where we give the LLM a crafted promnpt that directs it to reflect on past actions and respond with the next action.  
-Note that we give the LLM a specific output format. Note that the output format for the **Action** is specified to be JSON so that we can have better tool calling control.
+Note that we give the LLM a specific output format. The output format for the **Action** is specified to be JSON so that we can have better tool calling control.
 
 
 **NOTE:** As noted earlier in the tools tutorial, most modern LLM have specific tool calling and structured output conventions that would give more predictable structured output.  
