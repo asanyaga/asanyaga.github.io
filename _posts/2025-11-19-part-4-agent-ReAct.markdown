@@ -16,43 +16,21 @@ The **ReAct**(Reasoning and Acting) pattern is a powerful pattern that combines 
 * **Observation** The result of the action (tool output) is returned to the agent, serving as the observation for the next turn.
 
 ### Why Reasoning is Essential for Agent Success
-* **Self-correction**: Allows the agent to recognize when a tool call failed or when the output didn't align with the goal.
-* **Plan Adjustment**: The agent can assess the progress of the plan and modify its approach dynamically. For instance if `analyze_code` suggests a fix, the reasoning step can verify that the suggested fix actually addresses the original problem.
-* **Increased Robustness**: By incorporating a dedicated step to evaluate its outputs, the agent becomes less prone to "hallucination" and its responses are more grounded in real world tool outputs.
-
+* **Self-correction**: Reflection allows the agent to recognize when a tool call failed or when the output didn't align with the goal.
+* **Plan Adjustment**: The agent can assess the progress of the plan and modify its approach dynamically. For instance if it suggests a fix, the reasoning step can verify that the suggested fix actually addresses the original problem.
+* **Increased Robustness**: By incorporating a dedicated step to reason about its outputs, the agent becomes less prone to "hallucination" and its responses are more grounded in real world tool outputs.
 
 ### Implementing the ReaAct agent
-We are going to add a new tool for the agent to be able to apply any fixes to code that it suggests
-
-```python
-import os
-import json
-
-def patch_file(file_path:str, content: str) -> str:
-    """Writes the given content to a file, completely replacing its current content"""
-    try:
-        with open(file_path,"w") as f:
-            f.write(content)
-        return f"File succesfully updated: {file_path}"
-    except Exception as e:
-        return f"Error writing to file {file_path}: {e}"
-
-```
-
 
 ### The Agent code so far
-We will make changes to this agent code to demonstrate a simple implementation of the ReAct pattern. [CodeReviewAgentWithMemory](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_context.ipynb)
+We will make changes to this agent code [CodeReviewAgentWithContext](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_context.ipynb) to demonstrate a simple implementation of the ReAct pattern
 
 
 ### Set up the tools
 
 ```python
-from typing import Callable, Dict
-import openai
 import os
-
-
-## Set up the tools and tools registry
+from typing import Callable, Dict
 
 def read_file(filepath: str) -> str:
     """Read contents of a Python file"""
@@ -61,21 +39,7 @@ def read_file(filepath: str) -> str:
     
     with open(filepath, "r") as f:
         return f.read()
-
-def analyze_code(code: str) -> str:
-    """Ask an LLM to analyze the provided code."""
-    prompt = f"""
-    You are a helpful code review assistant.
-    Analyze the following Python code and suggest one improvement.
-
-    Code:
-    {code}
-    """
-
-    response = openai.responses.create(model="gpt-4.1-mini",input=[{"role":"user","content":prompt}])
-
-    return response.output_text
-
+    
 def patch_file(filepath: str, content: str) -> str:
     """Writes the given content to a file, completely replacing its current content."""
     try:
@@ -84,7 +48,11 @@ def patch_file(filepath: str, content: str) -> str:
         return f"File successfully updated: {filepath}. New content written."
     except Exception as e:
         return f"Error writing to file {filepath}: {e}"
-        
+
+def print_review(review: str):
+    print(f"Review: {review}")
+    return f"Printed review: {review}"
+
 class ToolRegistry:
     """Holds available tools and dispatches them by name."""
     def __init__(self):
@@ -97,18 +65,17 @@ class ToolRegistry:
         if name not in self.tools:
             return f"Unknown tool: {name}"
         return self.tools[name](*args, **kwargs)
-
 ```
 
 ### Implement the ReAct Agent
-* Add a `run()` method to manage the observe, reason, act loop
+* Update the `run()` method to manage the observe, reason, act loop
 ```python
     def run(self, user_query:str, max_iterations=3):
         """
-        Main execution loop with reasoning.
+        Main execution loop with reflection.
         Args:
             user_query: The user's request
-            max_iterations: Maxumum number of reason-act cycles. this is to avoid the agent getting stuck in a loop.
+            max_iterations: Maxumum number of think-act-reflect cycles. this is to avoid the agent getting stuck in a loop.
         
         Returns:
             Final response string
@@ -117,38 +84,113 @@ class ToolRegistry:
 
         current_input = user_query
 
-        while step < max_iterations:
-            print(f"\n--- Step {step+1} ---")
+        for step in range(max_iterations):.
+            
+            print(f"\n{'-'*60}")
+            print(f"\nStep {step+1} of {max_iterations}")
+            print(f"\n{'-'*60}")
 
             llm_response = self.think(current_input)
 
             print(f"Agent's LLM Response:\n{llm_response}")
 
-            if "Answer:" in llm_response:
-                final_answer = llm_response.split("Answer:",1)[1].strip()
-                print(f"\n Agent Finished: \n {final_answer}")
-                return final_answer
-            if "Action:" in llm_response:
-                action_line = llm_response.split("Action:",1)[1].split("\n")[0].strip()
-                print(f"Acting: {action_line}")
+            try:
+                parsed_reponse = json.loads(llm_response)
+            except json.JSONDecodeError as e:
+                current_input = (
+                    f"Your response was not valid Json. Error: {e}\n"
+                    f"Respond with ONLY valid JSON matching the required format."
+                )
+            if "thought" in parsed_reponse:
+                print(f"\nThought: {parsed_reponse["thought"]}")
 
-                tool_result = self.act(action_line)
-
-                print(f"\nTool Result:\n{tool_result}")
-                current_input = f"Observation:{tool_result}"
-            else:
-                error_msg = f"LLM did not provide valid Action or Answer: LLM Respose:: {llm_response}"
-                print(f"\n Error: {error_msg}")
-                return error_msg
+            if "answer" in parsed_reponse:
+                print(f"\n Answer: {parsed_reponse["answer"]}")
+                return parsed_reponse["answer"]
             
-            step +=1
-        
+            if "action" in parsed_reponse:
+                action = parsed_reponse["action"]
+                tool_name = action.get("tool","unknown")
+                args = action.get("args", [])
+
+                observation = self.act(action)
+                print(f"Action: {tool_name}({','.join(repr(a) for a in args)})")
+                current_input = f"Observation: {observation}"
+            else:
+                # Neither action nor answer
+                print("\nResponse missing both 'action' and 'answer'")
+                current_input = (
+                    "Your response must include either 'action' (to use a tool) "
+                    "or 'answer' (if the task is complete). Please try again."
+                )
+
         return "Max steps reached without a final answer"
 ```
-* Update the `system_message_context` prompt in `think()` to implement the ReAct pattern
-* The ReAct pattern is implemented by a prompt engineering technique where we give the LLM a crafted promnpt that directs it to reflect on past actions and respond with the next action.  
-Note that we give the LLM a specific output format. The output format for the **Action** is specified to be JSON so that we can have better tool calling control.
+* Add `build_system_prompt()` to generate a ReAct system prompt.
+```python
+    def build_system_prompt(self) -> str:
+        """Construct the ReAct system prompt with current context."""
+        return f"""You are a code review assistant using the ReAct pattern.
 
+        ## Available Tools
+        - read_file(filepath): Read contents of a file
+        - analyze_code(code): Get LLM analysis of code  
+        - patch_file(filepath, content): Replace file contents entirely
+
+        ## Context
+        {self.get_relevant_memories()}
+
+        Conversation summary: {self.conversation_summary or 'This is the start of the conversation.'}
+
+        ## Response Format
+
+        You MUST respond with valid JSON in one of these two formats:
+
+        ### Format 1: When you need to use a tool
+        {{
+        "thought": "Your reasoning about what to do and why",
+        "action": {{
+            "tool": "tool_name",
+            "args": ["arg1", "arg2"]
+        }}
+        }}
+
+        ### Format 2: When the task is complete
+        {{
+            "thought": "Your reasoning about why the task is complete",
+            "answer": "Your final response to the user"
+        }}
+
+        ## Rules
+        1. Always include "thought" explaining your reasoning
+        2. Include "action" when you need to call a tool
+        3. Include "answer" only when the task is fully complete
+        4. Never include both "action" and "answer"
+        5. Respond with ONLY valid JSON—no markdown, no extra text
+
+        ## Example
+
+        User: Review auth.py and fix any bugs
+
+        Response 1:
+        {{"thought": "I need to read the file first to see its contents.", "action": {{"tool": "read_file", "args": ["auth.py"]}}}}
+
+        Observation: def check(u): return db.user = u
+
+        Response 2:
+        {{"thought": "There's a bug: using = (assignment) instead of == (comparison). I'll fix it.", "action": {{"tool": "patch_file", "args": ["auth.py", "def check(u): return db.user == u"]}}}}
+
+        Observation: File successfully updated: auth.py
+
+        Response 3:
+        {{"thought": "The bug is fixed. The comparison operator is now correct.", "answer": "Fixed auth.py: changed assignment operator (=) to comparison operator (==) in the return statement."}}
+        """
+
+```
+* Update the `system_message_context` prompt in `think()` to implement the ReAct pattern
+
+* The ReAct pattern is implemented by a prompt engineering technique where we give the LLM a crafted promnpt that directs it to reason about past actions and results and respond with the next action.  
+Note that we give the LLM a specific output format. The output format is specified to be JSON so that we can have better response handling control.
 
 **NOTE:** As noted earlier in the tools tutorial, most modern LLM have specific tool calling and structured output conventions that would give more predictable structured output.  
 In this example, we keep things simple by telling the LLM how to format its response so it can work with most LLMs.
@@ -157,6 +199,7 @@ In this example, we keep things simple by telling the LLM how to format its resp
 ```python
 import tiktoken
 import json
+import openai
 
 class CodeReviewAgentReAct:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4.1",memory_file="agent_memory.json",summarize_after=10,max_context_tokens=6000):
@@ -197,7 +240,6 @@ class CodeReviewAgentReAct:
             total_tokens -= self.count_tokens(removed_msg["content"])
 
         return total_tokens
-
 
     def summarize_history(self):
         """Use LLM to summarize the conversation so far."""
@@ -261,6 +303,65 @@ class CodeReviewAgentReAct:
         else:
             self.long_term_memory = {}
 
+    
+    def build_system_prompt(self) -> str:
+        """Construct the ReAct system prompt with current context."""
+        return f"""You are a code review assistant using the ReAct pattern.
+
+        ## Available Tools
+        - read_file(filepath): Read contents of a file
+        - analyze_code(code): Get LLM analysis of code  
+        - patch_file(filepath, content): Replace file contents entirely
+
+        ## Context
+        {self.get_relevant_memories()}
+
+        Conversation summary: {self.conversation_summary or 'This is the start of the conversation.'}
+
+        ## Response Format
+
+        You MUST respond with valid JSON in one of these two formats:
+
+        ### Format 1: When you need to use a tool
+        {{
+        "thought": "Your reasoning about what to do and why",
+        "action": {{
+            "tool": "tool_name",
+            "args": ["arg1", "arg2"]
+        }}
+        }}
+
+        ### Format 2: When the task is complete
+        {{
+            "thought": "Your reasoning about why the task is complete",
+            "answer": "Your final response to the user"
+        }}
+
+        ## Rules
+        1. Always include "thought" explaining your reasoning
+        2. Include "action" when you need to call a tool
+        3. Include "answer" only when the task is fully complete
+        4. Never include both "action" and "answer"
+        5. Respond with ONLY valid JSON—no markdown, no extra text
+
+        ## Example
+
+        User: Review auth.py and fix any bugs
+
+        Response 1:
+        {{"thought": "I need to read the file first to see its contents.", "action": {{"tool": "read_file", "args": ["auth.py"]}}}}
+
+        Observation: def check(u): return db.user = u
+
+        Response 2:
+        {{"thought": "There's a bug: using = (assignment) instead of == (comparison). I'll fix it.", "action": {{"tool": "patch_file", "args": ["auth.py", "def check(u): return db.user == u"]}}}}
+
+        Observation: File successfully updated: auth.py
+
+        Response 3:
+        {{"thought": "The bug is fixed. The comparison operator is now correct.", "answer": "Fixed auth.py: changed assignment operator (=) to comparison operator (==) in the return statement."}}
+        """
+
     def think(self, user_input:str):
         """LLM decides which tool to use with both short term and long term context."""
         # Add user message to history
@@ -273,67 +374,7 @@ class CodeReviewAgentReAct:
             self.summarize_history()
 
         #Include long term memory & summary in system context
-        system_message_context = f"""You are a code assistant with access to these tools:
-                - read_file(filepath)
-                - analyze_code(code)
-                - patch_file(filepath,content)
-
-                {self.get_relevant_memories()}
-
-                Conversation Summary: {self.conversation_summary or 'This is the start of the conversation'}
-
-                Decide which tool to use based on the conversation, conversation summary and relevant memories.
-
-                Follow the ReAct pattern: **Thought**, then **Action** or a final **Answer**
-                **Format your response STRICTLY as follows:**
-
-                1. Thought:Your internal reasoning and plan.
-                2. Action:The tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"patch_file", "args":["file_path","content"]}}. **OR**
-                3. Answer:Your final human-readable response.
-
-                After each action you will receive an observation which is a result from the tool call
-                DO NOT include any previous thoughts or observations from the conversation history
-                DO NOT include any observation
-
-                Reply only with 
-                Thought:reasoning or plan
-                Action:tool_call
-             
-                Only provide an Answer: if you have completed the task based on a tool call result
-                If based on a tool call result you have completed the task respond with ONLY
-                Thought:reasoning
-                Answer:why based on the latest observation the task is complete
-
-                Example exchange
-                initial user query
-                User: Review and fix the code in auth.py
-
-                your response
-                Thought: I need to use the tool read_file(auth.py) to review its code
-                Action:{{"tool":"read_file","args":["auth.py"]}}
-
-                response from tool call
-                Observation: return user_store.username = user_name
-
-                your response
-                Thought:I have found the issue. the code is using an assignment instead of comparison so the code will not work. I will use the tool patch_file to correct the code.
-                Action: {{"tool":"patch_file","args":["auth.py","return user_store.username == user_name"]}}
-
-                response from tool call
-                Observation: successfully applied patch to file auth.py
-
-                your response
-                Thought: The code in auth.py has been updated. I will now read the updated auth.py to confirm
-                Action:{{"tool":"read_file","args":["auth.py"]}}
-
-                response from tool call
-                Observation: "return user_store.username == user_name"
-
-                your response
-                Thought: The auth.py file now has the updated code. This task is complete
-                Answer: Task is complete because the auth.py file now has the correct code
-
-                """
+        system_message_context = self.build_system_prompt()
 
         self.trim_history_to_fit(system_message_context)
         
@@ -357,12 +398,12 @@ class CodeReviewAgentReAct:
 
         return decision
     
-    def act(self, decision:str):
-        """Execute the chosen tool and record the result."""
+    def act(self, action:str):
+        """Execute the chosen tool and return the result."""
         try:
-            parsed = json.loads(decision)
-            tool_name = parsed["tool"]
-            args = parsed.get("args",[])
+            
+            tool_name = action.get("tool")
+            args = action.get("args",[])
 
             result = self.tools.call(tool_name,*args)
             self.conversation_history.append({"role":"system","content":result})
@@ -390,32 +431,46 @@ class CodeReviewAgentReAct:
 
         current_input = user_query
 
-        while step < max_iterations:
-            print(f"\n--- Step {step+1} ---")
+        for step in range(max_iterations):
+            
+            print(f"\n{'-'*60}")
+            print(f"\nStep {step+1} of {max_iterations}")
+            print(f"\n{'-'*60}")
 
             llm_response = self.think(current_input)
 
             print(f"Agent's LLM Response:\n{llm_response}")
 
-            if "Answer:" in llm_response:
-                final_answer = llm_response.split("Answer:",1)[1].strip()
-                print(f"\n Agent Finished: \n {final_answer}")
-                return final_answer
-            if "Action:" in llm_response:
-                action_line = llm_response.split("Action:",1)[1].split("\n")[0].strip()
-                print(f"Acting: {action_line}")
+            try:
+                parsed_reponse = json.loads(llm_response)
+            except json.JSONDecodeError as e:
+                current_input = (
+                    f"Your response was not valid Json. Error: {e}\n"
+                    f"Respond with ONLY valid JSON matching the required format."
+                )
+            if "thought" in parsed_reponse:
+                print(f"\nThought: {parsed_reponse["thought"]}")
 
-                tool_result = self.act(action_line)
-
-                print(f"\nTool Result:\n{tool_result}")
-                current_input = f"Observation:{tool_result}"
-            else:
-                error_msg = f"LLM did not provide valid Action or Answer: LLM Respose:: {llm_response}"
-                print(f"\n Error: {error_msg}")
-                return error_msg
+            if "answer" in parsed_reponse:
+                print(f"\n Answer: {parsed_reponse["answer"]}")
+                return parsed_reponse["answer"]
             
-            step +=1
-        
+            if "action" in parsed_reponse:
+                action = parsed_reponse["action"]
+                tool_name = action.get("tool","unknown")
+                args = action.get("args", [])
+
+                observation = self.act(action)
+                print(f"Action: {tool_name}({','.join(repr(a) for a in args)})")
+                current_input = f"Observation: {observation}"
+            else:
+                # Neither action nor answer
+                print("\nResponse missing both 'action' and 'answer'")
+                current_input = (
+                    "Your response must include either 'action' (to use a tool) "
+                    "or 'answer' (if the task is complete). Please try again."
+                )
+
         return "Max steps reached without a final answer"
 ```
 
@@ -428,7 +483,7 @@ tool_registry = ToolRegistry()
 
 # Register the tools we defined above
 tool_registry.register("read_file", read_file)
-tool_registry.register("analyze_code",analyze_code)
+tool_registry.register("print_review",print_review)
 tool_registry.register("patch_file",patch_file)
 
 agent = CodeReviewAgentReAct(tools_registry=tool_registry)
@@ -436,9 +491,9 @@ agent = CodeReviewAgentReAct(tools_registry=tool_registry)
 agent.run(user_query="Review the code in sample.py and fix any issues you find")
 ```
 
-**Full Source Code Here:**  [ReAct Agent Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-4-agent-ReAct.ipynb)
-
 ## What's next
 In this tutorial we have implemented a simple ReAct agent that 'thinks' about what actions to take based on the input that it's been given.
 
-In the next part of the series we will look at more advanced patterns such as routing, planning, orchestration and multi agent workflows. 
+In the next part of the series we will look at more advanced patterns such as routing, planning, and multi agent workflows. 
+
+**Full Source Code Here:**  [ReAct Agent Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-4-agent-ReAct.ipynb)
