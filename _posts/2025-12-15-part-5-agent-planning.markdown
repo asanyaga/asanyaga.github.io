@@ -3,11 +3,12 @@ title:  "Planning and Task Decomposition in AI Agents"
 date:   2025-12-15 10:19:51 +0300
 categories: agents ai
 ---
+
 In the previous tutorial we built a code review agent that uses the ReAct pattern to reason about tasks, call tools and manage memory. However, our agent still handles tasks linearly; it takes one step at a time without a comprehensive plan for complex, multi-step workflows.
 
 In this tutorial we will add **planning and task decomposition** capabilities to our agent.
 
-We will teach it to;
+We will instruct it to;
 1. Break down complex tasks into smaller sub tasks
 2. Create and follow execution plans
 3. Track progress through multi step workflows

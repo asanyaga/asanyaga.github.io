@@ -3,10 +3,11 @@ title:  "Adding Memory to your Agent: Short-Term and Long-Term memory in practic
 date:   2025-11-03 17:19:51 +0300
 categories: agents ai
 ---
-## Introduction
-In our previous tutorial, we built a code review agent that uses tools to read files and analyze code. But there's a critical limitation:**our agent has no memory between interactions**. Every time we call `think()`, the agent starts fresh, with no knowledge of previous conversations or actions.
 
-Imagine asking the agent to "review the last file I mentioned" or "compare this code to what you saw earlier". Without memory it cant do either. In this article, we'll transform our stateless agent into one that remembers conversations, learns from interactions, and manages its memory efficiently.
+## Introduction
+In our previous tutorials, we built a code review agent that uses tools. But there's a critical limitation:**our agent has no memory between interactions**. Every time we call `think()`, the agent starts fresh, with no knowledge of previous conversations or actions.
+
+Imagine asking the agent to "review the last file I mentioned" or "compare this code to what you saw earlier". Without memory it can't do either. In this article, we'll transform our stateless agent into one that remembers conversations, learns from interactions, and manages its memory efficiently.
 
 We will cover:
 * Why memory matters for agents
@@ -27,9 +28,8 @@ Real world conversations have context. Our agent needs memory to maintain that c
 **Short-term memory** stores the recent conversation between user and agent. This is the foundation of a multi-turn dialogue.
 
 ### Implementation: Adding a Message Buffer
-Let's add a simple conversation history to our previous agent [CodeReveiwAgentWithTools](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_tools.ipynb)
-
-1. **Inititalize** a list for conversation history
+Let's add a simple conversation history to our agent [CodeReveiwAgentWithTools](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent_with_tools.ipynb)
+1. Inititalize a list for conversation history
 ```python
 class CodeReviewAgentWithSTMemory:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini"):
@@ -38,7 +38,7 @@ class CodeReviewAgentWithSTMemory:
         self.conversation_history = [] # Short-term memory
 ```
 
-2. **Update** `think()` to add user input and LLM responses to `conversation_history` and include the conversation history in the prompt
+2. Update `think()` to add user input and LLM responses to `conversation_history` and include the conversation history in the prompt
 ```python
     def think(self, user_input:str):
         """LLM decides which tool to use with conversation context."""
@@ -54,11 +54,13 @@ class CodeReviewAgentWithSTMemory:
                 - analyze_code(code)
 
                 Decide which tool to use based on the conversation.
-                Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+                If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+        Examples:
+        - read_file("main.py")
+        - patch_file(filepath, content)
+        - print_review(review: str)
 
-                Examples:
-                read_file("main.py")
-                analyze_code("def foo():pass")
+        If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete    
 
                 """
             }
@@ -77,7 +79,7 @@ class CodeReviewAgentWithSTMemory:
         return decision
 ```
 
-3. **Update** `act()` to add tool call results to conversation history
+3. Update `act()` to add tool call results to conversation history
 ```python
     def act(self, decision:str):
         """Execute the chosen tool and record the result."""
@@ -102,19 +104,20 @@ class CodeReviewAgentWithSTMemory:
             })
             return error_msg
 ```
-
 ### What changed
-* **`conversation_history` list**: Stores all messages as dictionaries with `role` and `content`
-* **Messages passed to LLM**: Instead of a single prompt string, we send the entire conversation
-* **Tool call result stored**: After each action we append the result to history so the agent can reference it
+1. **`conversation_history` list**: Stores all messages as dictionaries with `role` and `content`
+2. **Messages passed to LLM**: Instead of a single prompt string, we send the entire conversation
+3. **Tool call result stored**: After each action we append the result to history so the agent can reference it
 
-### Set up tools
+### Tool Setup
+
 
 ```python
-# Set up the tools and tool registry
-import os
 import openai
-from typing import Dict, Callable
+import os
+from typing import Callable, Dict
+import json
+
 
 def read_file(filepath: str) -> str:
     """Read contents of a Python file"""
@@ -123,21 +126,19 @@ def read_file(filepath: str) -> str:
     
     with open(filepath, "r") as f:
         return f.read()
+    
+def patch_file(filepath: str, content: str) -> str:
+    """Writes the given content to a file, completely replacing its current content."""
+    try:
+        with open(filepath, "w") as f:
+            f.write(content)
+        return f"File successfully updated: {filepath}. New content written."
+    except Exception as e:
+        return f"Error writing to file {filepath}: {e}"
 
-def analyze_code(code: str) -> str:
-    """Ask an LLM to analyze the provided code."""
-    prompt = f"""
-    You are a helpful code review assistant.
-    Analyze the following Python code and suggest one improvement.
-
-    Code:
-    {code}
-    """
-
-    response = openai.responses.create(model="gpt-4.1-mini",input=[{"role":"user","content":prompt}])
-
-    return response.output_text
-
+def print_review(review: str):
+    print(f"Review: {review}")
+    return f"Printed review: {review}"
 
 class ToolRegistry:
     """Holds available tools and dispatches them by name."""
@@ -152,9 +153,21 @@ class ToolRegistry:
             return f"Unknown tool: {name}"
         return self.tools[name](*args, **kwargs)
 
+
+class ToolRegistry:
+    """Holds available tools and dispatches them by name."""
+    def __init__(self):
+        self.tools: Dict[str,Callable] = {}
+    
+    def register(self, name:str, func: Callable):
+        self.tools[name] = func
+
+    def call(self, name:str, *args, **kwargs):
+        if name not in self.tools:
+            return f"Unknown tool: {name}"
+        return self.tools[name](*args, **kwargs)
 ```
 
-### CodeReviewAgentWithSTMemory
 
 ```python
 import json
@@ -173,16 +186,22 @@ class CodeReviewAgentWithSTMemory:
         messages = [
             {
                 "role":"system",
-                "content":"""You are a code assistant with access to these tools:
-                - read_file(filepath)
-                - analyze_code(code)
+                "content":f"""You are a code assistant with access to the tools below.
 
-                Decide which tool to use based on the conversation.
-                Reply ONLY with the tool call to make in JSON format {"tool": "tool_name", "args": ["arg1", "arg2"]} (e.g., {"tool":"read_file", "args":["sample.py"]}
-                
-                Examples:
-                {"tool":"read_file", "args":["sample.py"]}
-                {"tool":"analyze_code", "args":["def foo():pass"]}
+                Available tools:
+                - read_file(filepath)
+                - patch_file(filepath, content)
+                - print_review(review: str)
+
+
+                Decide which tool is most appropriate based on the conversation.
+                If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+                 Examples:
+                - read_file("main.py")
+                - patch_file(filepath, content)
+                - print_review(review: str)
+
+                If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete
                 """
             }
         ] + self.conversation_history
@@ -201,6 +220,7 @@ class CodeReviewAgentWithSTMemory:
     
     def act(self, decision:str):
         """Execute the chosen tool and record the result."""
+        print(f"Acting on decision: {decision}")
         try:
             parsed = json.loads(decision)
             tool_name = parsed["tool"]
@@ -221,37 +241,49 @@ class CodeReviewAgentWithSTMemory:
                 "content": error_msg
             })
             return error_msg
+        
+    def run(self, user_input: str, max_steps:int=3):
+        original_input = user_input
+        for step in range(max_steps):
+            print(f"Step: {step+1} of {max_steps}")
+            decision = self.think(user_input)
+            try:
+                decision_parsed = json.loads(decision)
+            except json.JSONDecodeError as e:
+                print(f"Could not parse decision:{decision}. Error: {e}")
+                user_input = f"Your response was not valid JSON.\nOriginal user request: {original_input}"
+            
+            if decision_parsed.get("done"):
+                print(f"Task complete\nAssistant Repose:{decision}")
+                return decision_parsed.get("summary")
+            
+            result = self.act(decision)
+            user_input = f"Original user request: {original_input}\nLast assistant response{decision}\nLast tool result: {result}. continue with original user request"
 
+        print("Loop complete. (max steps reached)")
+        return result
 ```
 
-### Let's give it a try by simulating a multi-turn conversation
+### Let's give it a try
 
 
 ```python
 registry = ToolRegistry()
 registry.register("read_file",read_file)
-registry.register("analyze_code",analyze_code)
+registry.register("patch_file",patch_file)
+registry.register("print_review",print_review)
 
 agent_with_st_memory = CodeReviewAgentWithSTMemory(registry)
 
 # Multi-turn conversation
-decision1 = agent_with_st_memory.think("read the file sample.py")
-print(f"Agent first decision: {decision1}")
+result = agent_with_st_memory.run("Review the code in sample.py and print the review",max_steps=5)
 
-result1 = agent_with_st_memory.act(decision1)
-print(f"Agent first action result: {result1}")
+print(f"Agent Result: {result}")
 
-#The agent remembers what it read. We don't need to provide it the code
-decision2 = agent_with_st_memory.think("Analyze that code")
-print(f"Agent second decision: {decision2}")
-
-result2 = agent_with_st_memory.act(decision2)
-print(f"Second action result: {result2}")
-
-print(f"Chat history : {agent_with_st_memory.conversation_history}")
+print(f"Agent Chat History : {agent_with_st_memory.conversation_history}")
 ```
 
-**Key insight:** The LLM sees the full conversation each time, allowing it to understand context and references like "that code" or "the last file"
+***Key insight:** The LLM sees the full conversation each time, allowing it to understand context and references like "that code" or "the last file"
 
 ## Long-term Memory: Persistent Knowledge
 Short-term memory is exists only during a session. Long term memory persists across sessions and stores important information the agent should remember 
@@ -317,8 +349,9 @@ class CodeReviewAgentWithLTMemory:
                 print(f"Warning: Could not load memory from {self.memory_file}: {e}")
         else:
             self.long_term_memory = {}
+
 ```
-7. **Update** the prompt's system message to include the long term memory as `relevant_memories`
+7. Update the prompt's system message to include the long term memory as `relevant_memories`
 ```python
     def think(self, user_input:str):
         """LLM decides which tool to use with both short term and long term context."""
@@ -332,17 +365,18 @@ class CodeReviewAgentWithLTMemory:
                 {self.get_relevant_memories()}
 
                 Decide which tool to use based on the conversation and relevant memories.
-                Reply ONLY with the tool call to make in JSON format {"tool": "tool_name", "args": ["arg1", "arg2"]} (e.g., {"tool":"read_file", "args":["sample.py"]}
-                
-                Examples:
-                {"tool":"read_file", "args":["sample.py"]}
-                {"tool":"analyze_code", "args":["def foo():pass"]}
+                If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+        Examples:
+        - read_file("main.py")
+        - patch_file(filepath, content)
+        - print_review(review: str)
+
+        If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete    
 
                 """
         #... existing code
 ```
 
-### CodeReviewAgentWithLTMemory
 
 ```python
 import json
@@ -357,7 +391,7 @@ class CodeReviewAgentWithLTMemory:
         self.load_long_term_memory() # Long-term memory (key-value store)
 
     def remember(self, key:str, value: str):
-        """Retrieve information from long term memory."""
+        """Save information to long term memory."""
         self.long_term_memory[key] = value
         self.save_long_term_memory()
     
@@ -399,19 +433,23 @@ class CodeReviewAgentWithLTMemory:
         self.conversation_history.append({"role":"user","content":user_input})
 
         #Include long term memory in system context
-        system_message_context = f"""You are a code assistant with access to these tools:
+        system_message_context = f"""You are a code assistant with access to the tools below.
+
+                Available tools:
                 - read_file(filepath)
-                - analyze_code(code)
+                - patch_file(filepath, content)
+                - print_review(review: str)
+
 
                 {self.get_relevant_memories()}
 
-                Decide which tool to use based on the conversation and relevant memories.
-                Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
-                
-                Examples:
-                {{"tool":"read_file", "args":["sample.py"]}}
-                {{"tool":"analyze_code", "args":["def foo():pass"]}}
+       If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+        Examples:
+        - read_file("main.py")
+        - patch_file(filepath, content)
+        - print_review(review: str)
 
+        If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete
                 """
 
         # Build prompt with system instructions
@@ -458,6 +496,27 @@ class CodeReviewAgentWithLTMemory:
                 "content": error_msg
             })
             return error_msg
+
+    def run(self, user_input: str, max_steps:int=3):
+        original_input = user_input
+        for step in range(max_steps):
+            print(f"Step: {step+1} of {max_steps}")
+            decision = self.think(user_input)
+            try:
+                decision_parsed = json.loads(decision)
+            except json.JSONDecodeError as e:
+                print(f"Could not parse decision:{decision}. Error: {e}")
+                user_input = f"Your response was not valid JSON.\nOriginal user request: {original_input}"
+                
+            if decision_parsed.get("done"):
+                print(f"Task complete\nAssistant Repose:{decision}")
+                return decision_parsed.get("summary")
+            
+            result = self.act(decision)
+            user_input = f"Original user request: {original_input}\nLast assistant response{decision}\nLast tool result: {result}. continue with original user request"
+
+        print("Loop complete. (max steps reached)")
+        return result       
 ```
 
 ### Demo: Long term memory persists across agent sessions
@@ -468,16 +527,18 @@ class CodeReviewAgentWithLTMemory:
 # Multi-turn conversation with long term memory
 registry = ToolRegistry()
 registry.register("read_file",read_file)
-registry.register("analyze_code",analyze_code)
+registry.register("print_review",print_review)
+registry.register("patch_file",patch_file)
 
 agent_with_lt_memory1 = CodeReviewAgentWithLTMemory(registry)
+
 code_snippet = """
 def divide(a,b):
     return a/b
 """
 
-agent_with_lt_memory1.remember("documentation","add comprehensive documentation and doc string to ALL code you suggest")
-decision1_with_ltm1 = agent_with_lt_memory1.think(f"Analyze this code:{code_snippet}")
+agent_with_lt_memory1.remember("documentation","add comprehensive documentation and doc string to ALL code generated")
+decision1_with_ltm1 = agent_with_lt_memory1.run(f"Review this code:{code_snippet}")
 
 print(f"First Agent Long Term Memory {agent_with_lt_memory1.long_term_memory}")
 print((f"First Agent Conversion History: {agent_with_lt_memory1.conversation_history}"))
@@ -498,7 +559,7 @@ As conversations grow so does the memory footprint. A 50 turn conversation might
 * When moving to a new topic or task
 
 Let's implement a simple periodic summarization where we use an LLM to generate a summary from the conversation history and trim the conversation to the last few turns.  
-1. **Add** `summarize_after` parameter to agent initialization to set after how many messages to summarize
+1. Add `summarize_after` parameter to agent initialization to set after how many messages to summarize
 ```python
 class CodeReviewAgentWithSTMemorySummarization:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini",memory_file="agent_memory.json",summarize_after=10):
@@ -507,8 +568,8 @@ class CodeReviewAgentWithSTMemorySummarization:
         self.summarize_after = summarize_after # Number of conversation turns after which to summarize
         self.turns_since_summary = 0 # Track number of turns sinse last summary
 ```
-2. **Add** `conversation_summary` to keep the conversation summary
-3. **Add** `summarize_history()`: Periodically use LLM to summarize conversation history when the `summarize_after` message limit is reached
+2. Add `conversation_summary` to keep the conversation summary
+3. Add `summarize_history()`: Periodically use LLM to summarize conversation history when the `summarize_after` message limit is reached
 ```python
     def summarize_history(self):
         """Use LLM to summarize the conversation so far."""
@@ -533,8 +594,9 @@ class CodeReviewAgentWithSTMemorySummarization:
 
         self.conversation_history = recent_turns
         self.turns_since_summary = 0
+
 ```
-4. **Update** the system prompt to include the `conversation_summary`
+4. Include the `conversation_summary` in the system prompt
 ```python
     def think(self, user_input:str):
         """LLM decides which tool to use with both short term and long term context."""
@@ -557,14 +619,18 @@ class CodeReviewAgentWithSTMemorySummarization:
                 Conversation Summary: {self.conversation_summary or 'This is the start of the conversation'}
 
                 Decide which tool to use based on the conversation, conversation summary and relevant memories.
-                Reply ONLY with the tool name and argument.
-                Examples: read_file("main.py") or analyze_code("def foo():pass")
+                If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+                 Examples:
+                 - read_file("main.py")
+                 - patch_file(filepath, content)
+                 - print_review(review: str)
+
+                If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete               
 
                 """
         # ...rest of think code...
 ```
 
-### CodeReviewAgentWithSTMemorySummarization
 ```python
 class CodeReviewAgentWithSTMemorySummarization:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini",memory_file="agent_memory.json",summarize_after=10):
@@ -652,20 +718,25 @@ class CodeReviewAgentWithSTMemorySummarization:
             self.summarize_history()
 
         #Include long term memory & summary in system context
-        system_message_context = f"""You are a code assistant with access to these tools:
+        system_message_context = f"""You are a code assistant with access to the tools below.
+
+                Available tools:
                 - read_file(filepath)
-                - analyze_code(code)
+                - patch_file(filepath, content)
+                - print_review(review: str)
+
 
                 {self.get_relevant_memories()}
+        Conversation Summary: {self.conversation_summary or 'This is the start of the conversation'}
+        Decide which tool to use based on the conversation, conversation summary and relevant memories.
+        If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+        Examples:
+        - read_file("main.py")
+        - patch_file(filepath, content)
+        - print_review(review: str)
 
-                Conversation Summary: {self.conversation_summary or 'This is the start of the conversation'}
-
-                Decide which tool to use based on the conversation, conversation summary and relevant memories.
-                Reply ONLY with the tool name and argument.
-                Examples: read_file("main.py") or analyze_code("def foo():pass")
-
+        If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete
                 """
-
         # Build prompt with system instructions
         messages = [
             {
@@ -710,6 +781,27 @@ class CodeReviewAgentWithSTMemorySummarization:
                 "content": error_msg
             })
             return error_msg
+        
+    def run(self, user_input: str, max_steps:int=3):
+        original_input = user_input
+        for step in range(max_steps):
+            print(f"Step: {step+1} of {max_steps}")
+            decision = self.think(user_input)
+            try:
+                decision_parsed = json.loads(decision)
+            except json.JSONDecodeError as e:
+                print(f"Could not parse decision:{decision}. Error: {e}")
+                user_input = f"Your response was not valid JSON.\nOriginal user request: {original_input}"
+            
+            if decision_parsed.get("done"):
+                print(f"Task complete\nAssistant Repose:{decision}")
+                return decision_parsed.get("summary")
+            
+            result = self.act(decision)
+            user_input = f"Original user request: {original_input}\nLast assistant response{decision}\nLast tool result: {result}. continue with original user request"
+
+        print("Loop complete. (max steps reached)")
+        return result       
 ```
 
 ## Context Window Management
@@ -726,11 +818,11 @@ For this reason we need to manage the context window limits.
 ### Implement Token Aware Trimming
 Below is a simple implementation of token aware trimming
 
-1. **Token counting:** We use `tiktoken` to accurately count tokens
+1. Token counting. We use `tiktoken` to accurately count tokens
 ```python
 import tiktoken # OpenAI token counting library
 ```
-2. **Add** `trim_history_to_fit()`: Removes the oldest messages when over budget. This is called every time the agent calls `think()`
+2. Add `trim_history_to_fit()`: Removes the oldest messages when over budget. This is called every time the agent calls `think()`
 ```python
     def trim_history_to_fit(self, system_message:str):
         """Remove old messages until we fit within the token budget"""
@@ -749,7 +841,7 @@ import tiktoken # OpenAI token counting library
 
         return total_tokens
 ```
-3. **Update** `think()` to trim history
+3. Update `think()` to trim history
 ```python
     def think(self, user_input:str):
         """LLM decides which tool to use with both short term and long term context."""
@@ -763,25 +855,32 @@ import tiktoken # OpenAI token counting library
             self.summarize_history()
 
         #Include long term memory & summary in system context
-        system_message_context = f"""You are a code assistant with access to these tools:
+        system_message_context = f"""You are a code assistant with access to the tools below.
+
+                Available tools:
                 - read_file(filepath)
-                - analyze_code(code)
+                - patch_file(filepath, content)
+                - print_review(review: str)
 
                 {self.get_relevant_memories()}
 
                 Conversation Summary: {self.conversation_summary or 'This is the start of the conversation'}
 
                 Decide which tool to use based on the conversation, conversation summary and relevant memories.
-                Reply ONLY with the tool name and argument.
-                Examples: read_file("main.py") or analyze_code("def foo():pass")
+                If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+                Examples:
+                - read_file("main.py")
+                - patch_file(filepath, content)
+                - print_review(review: str)
 
+                If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete    
                 """
 
         self.trim_history_to_fit(system_message_context)
 
         #...existing think code...
 ```
-3. **Add** `max_context_tokens` to configure token limits
+3. Add `max_context_tokens` to configure token limits
 ```python
 class CodeReviewAgentWithTrimming:
     def __init__(self,tools_registry: ToolRegistry, model="gpt-4o-mini",memory_file="agent_memory.json",summarize_after=10,max_context_tokens=6000):
@@ -908,18 +1007,25 @@ class CodeReviewAgentWithContext:
             self.summarize_history()
 
         #Include long term memory & summary in system context
-        system_message_context = f"""You are a code assistant with access to these tools:
+        system_message_context = f"""You are a code assistant with access to the tools below.
+
+                Available tools:
                 - read_file(filepath)
-                - analyze_code(code)
+                - patch_file(filepath, content)
+                - print_review(review: str)
 
                 {self.get_relevant_memories()}
 
                 Conversation Summary: {self.conversation_summary or 'This is the start of the conversation'}
 
                 Decide which tool to use based on the conversation, conversation summary and relevant memories.
-                Reply ONLY with the tool name and argument.
-                Examples: read_file("main.py") or analyze_code("def foo():pass")
+                If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+                Examples:
+                - read_file("main.py")
+                - patch_file(filepath, content)
+                - print_review(review: str)
 
+                If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete    
                 """
 
         self.trim_history_to_fit(system_message_context)
@@ -968,18 +1074,39 @@ class CodeReviewAgentWithContext:
                 "content": error_msg
             })
             return error_msg
+        
+    def run(self, user_input: str, max_steps:int=3):
+        original_input = user_input
+        for step in range(max_steps):
+            print(f"Step: {step+1} of {max_steps}")
+            decision = self.think(user_input)
+            try:
+                decision_parsed = json.loads(decision)
+            except json.JSONDecodeError as e:
+                print(f"Could not parse decision:{decision}. Error: {e}")
+                user_input = f"Your response was not valid JSON.\nOriginal user request: {original_input}"
+            
+            if decision_parsed.get("done"):
+                print(f"Task complete\nAssistant Repose:{decision}")
+                return decision_parsed.get("summary")
+            
+            result = self.act(decision)
+            user_input = f"Original user request: {original_input}\nLast assistant response{decision}\nLast tool result: {result}. continue with original user request"
+
+        print("Loop complete. (max steps reached)")
+        return result       
 ```
 
 ### Notes on Memory
-* We have demonstrated storing long term memory and retrieving all of it.  
-In practice, with large memory sizes, it may be more efficient to store the memory in a database and use queries to retrieve long term memory that is relevant to the agent's task.
+* We have shown storing long term memory and retrieving all of it. In practice, with large memory sizes, it may be more efficient to store in a e.g. a vector store or database and use retrieval based on user input to fetch long term memory that is relevant to the agent task.
 * In our example we showed conversation history as lasting only for the session. It may be useful for later reference to also persist chat history. This stored conversation history would not be considered part of the agent's long term memory to be used during task sessions.
-
-**Full Source Code Here:**  [Agent Memory Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-3-agent-memory.ipynb)
+* **Context Engineering** In this tutorial we have shown context management only in relation to managing context window size. However, context window size is not the only reason we need to manage context. *Context engineering* is the strategies we use to decide what information our agent needs to do its job well.  
+Even with today's large context windows, throwing everything in is not always the best approach.  
+Irrelevant or poorly organized context can confuse the model, slow things down, and drive up costs. We'll dive deeper into context engineering strategies in a future tutorial.
 
 ## What's next
-So far we have implemented the building blocks of AI agents.
+In the next part of the series we will look at more advanced patterns such as reasoning, planning and multi agent workflows. 
 
-In the next part of the series we will explore more advanced patterns such as planning, routing, and multi agent workflows. 
+We will also start to dive deeper into the practical considerations for deploying real world agents such as observability, evaluating agents, guardrails and security.
 
-We will also start to explore the practical considerations of deploying real world agents such as observability, agent evaluation, guardrails, and security.
+**Full Source Code Here:**  [Agent Memory Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-3-agent-memory.ipynb)
