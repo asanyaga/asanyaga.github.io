@@ -4,50 +4,49 @@ date:   2025-11-03 17:19:51 +0300
 categories: agents ai
 ---
 
-## Introduction
- So far, our **AI Code Assistant** has learned how to think - it can read code and make intelligent suggestions.
+So far, our **AI Code Assistant** has learned how to think - it can read code and make intelligent suggestions.
 
- But it still can't do anything.  
+ But it still can't do anything. 
  It just talks about code instead of working with code.
 
- In this part, we will change that by introducing **tools** ; external actions your agent can perform beyond text generation.
+ In this tutorial, we will change that by introducing **tools** ; external actions your agent can perform beyond text generation.
 
- By the end of this tutorial, your assistant will:
- * Choose between **analyzing** code or **reading** from a file,
- * Dynamically decide what to do,
+ By the end of this tutorial, your assistant will;
+ * Choose from a list of actions provided by tools
+ * Dynamically decide what to do
  * And execute the right tool to complete the job
 
-## Concept: Tools are Actions
+ ## Concept: Tools are Actions
  In the real worlds, a human code reviewer might:
  * Open files
  * Edit code
  * Run tests
 
- LLMs cannot directly do that.  
- With tool calling, we can connect them to code functions, database queries or API calls that perform these tasks.  
- Tools are just code functions that the LLM can request via a formatted response to be executed. LLMs cannot directly execute this code
+
+ LLMs cannot directly do that.
+ With tool calling, we can connect them to code functions that perform these tasks.
+ Tools are just code functions that the LLM can request via a formatted response to be executed. LLMs cannot directly execute this code.
 
 ## The Tool Registry
-As we have seen above, tools are really just functions that we call after giving it a task and asking it to determine the best function to use.  
-The tools registry is a list of callable functions that the LLM has access to. We will give our agent some tools, like:
+As we have seen above, tools are functions that we call after giving it a task and asking it to determine the best function to use.  
+The tools registry is simply a list of callable functions that the LLM has access to. We will give our agent multiple tools, like:
 
 
  | Tool Name      | Description                      | Function                  |
  | -------------- | -------------------------------- | ------------------------- |
-| `read_file`    | Read code from a file            | `def read_file(path)`      |
-| `analyze_code` | Analyze a string of code         | LLM reasoning via API call |
+| `read_file`    | Read code from a file            | `def read_file(filepath)`      |
+| `patch_file` | Edit file         | `patch_file(filepath: str, content: str)` |
+| `print_review` | Print review         | `print_review(review:str)` |
 
-The agent decides; "Do I need to read a file, or analyze the given snippet?"  
+The agent decides; "Do I need to read a file, edit a file or print?"  
 We are keeping our tools simple here so that we focus on the concepts.
 
 Let's go ahead and build some tools, and give them to the code assistant that decides which tool to use based on user instruction, and run the tool.
-
 
 ### Step 1 Define the tools
 
 
 ```python
-import openai
 import os
 from typing import Callable, Dict
 
@@ -58,20 +57,19 @@ def read_file(filepath: str) -> str:
     
     with open(filepath, "r") as f:
         return f.read()
+    
+def patch_file(filepath: str, content: str) -> str:
+    """Writes the given content to a file, completely replacing its current content."""
+    try:
+        with open(filepath, "w") as f:
+            f.write(content)
+        return f"File successfully updated: {filepath}. New content written."
+    except Exception as e:
+        return f"Error writing to file {filepath}: {e}"
 
-def analyze_code(code: str) -> str:
-    """Ask an LLM to analyze the provided code."""
-    prompt = f"""
-    You are a helpful code review assistant.
-    Analyze the following Python code and suggest one improvement.
-
-    Code:
-    {code}
-    """
-
-    response = openai.responses.create(model="gpt-4.1-mini",input=[{"role":"user","content":prompt}])
-
-    return response.output_text
+def print_review(review: str):
+    print(f"Review: {review}")
+    return f"Printed review: {review}"
 ```
 
 ### Step 2: Build a simple tool registry
@@ -91,11 +89,10 @@ class ToolRegistry:
         if name not in self.tools:
             return f"Unknown tool: {name}"
         return self.tools[name](*args, **kwargs)
-    
 ```
 
 ### Step 3: Agent with tool use
-We will build on the CodeReview agent from the agent loop tutorial [CodeReviewAgent](https://github.com/asanyaga/ai-agents-tutorial/blob/main/code_review_agent.ipynb)
+We will build on the CodeReview agent from the agent loop tutorial [CodeReviewAgent](/code_review_agent.ipynb)  
 Most recent LLM models have support for *function calling*. Function calling is a capability of language models that enables them to output text in a structured format suitable for executing a function or code.
 
 **NOTE:**  Not all LLM models have function calling and structured output capabilities. For models that dont support function calling, this capability is achieved with well structured prompts and instructions.
@@ -117,17 +114,18 @@ class CodeReviewAgentWithTools:
 
         Available tools:
         - read_file(filepath)
-        - analyze_code(code)
-        - write_tests(test_code)
+        - patch_file(filepath: str, content: str)
+        - print_review(review: str)
 
         Decide which tool is most appropriate based on the user input below.
         Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"patch_file", "args":["file_path","content"]}}
+    
 
         Examples:
         read_file("main.py")
-        analyze_code("def foo():pass")
-        write_tests("def foo():pass")
-
+        patch_file("main.py","def foo():pass")
+        print_review(review: str)
+        
         user input: {user_input}
         """
 
@@ -140,6 +138,7 @@ class CodeReviewAgentWithTools:
     def act(self, decision:str):
         """Execute the chosen tool and output the result."""
         try:
+            
             parsed = json.loads(decision)
             tool_name = parsed["tool"]
             args = parsed.get("args",[])
@@ -150,6 +149,37 @@ class CodeReviewAgentWithTools:
             error_msg = f"Error executing tool: {e}"
             return error_msg
 ```
+
+4. Add `run()` method to manage the agent loop.  
+```python
+    def run(self, user_input: str, max_steps:int=3):
+
+        original_input = user_input
+        for step in range(max_steps):
+            print(f"Step: {step+1} of {max_steps}")
+            decision = self.think(user_input)
+            
+            try:
+                decision_parsed = json.loads(decision)
+            except json.JSONDecodeError as e:
+                print(f"Could not parse decision: {e}")
+                user_input = f"Your response was not valid JSON.\nOriginal user request: {original_input}"
+            
+            if decision_parsed.get("done"):
+                print(f"Task complete\nAssistant Repose:{decision}")
+                return decision_parsed.get("summary")
+            
+            result = self.act(decision)
+            user_input = f"Original user request: {original_input}\nLast assistant response{decision}\nLast tool result: {result}. continue with original user request"
+
+        print("Loop complete. (max steps reached)")
+        
+        return result 
+```
+#### NOTE:
+- We have a `max_steps` argument to prevent ending up in an infinite loop. In a later tutorial we will see how to use the language model to determine if a task is complete.
+- After the first loop we update the user input to include the last tool call `user_input = f"Original user request: {original_input}. Last Tool result: {result}`. This is because llms calls are stateless. The llm does not "remember" previous requests made to it, so in a multiturn interation we have to provide details of previous interations.  
+In a later tutorial we will explore memory management strategies to handle this issue.
 
 
 ```python
@@ -168,34 +198,61 @@ class CodeReviewAgentWithTools:
 
         Available tools:
         - read_file(filepath)
-        - analyze_code(code)
+        - patch_file(filepath, content)
+        - print_review(review: str)
 
-        Decide which tool is most appropriate based on the user input below.
-        Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
-
+        Decide which tool is most appropriate based on the user input below if a tool is needed.
+        If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
         Examples:
-        read_file("main.py")
-        analyze_code("def foo():pass")
+        - read_file("main.py")
+        - patch_file(filepath, content)
+        - print_review(review: str)
+
+        If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete
 
         user input: {user_input}
         """
-
+        print(f"Calling LLM with:\n{"-"*10}\n{prompt}\n{"-"*20}")
         response = openai.responses.create(model=self.model, input=[{"role":"user","content":prompt}])
 
         return response.output_text
     
     def act(self, decision:str):
         """Execute the chosen tool and record the result."""
+        print(f"Acting on decision: {decision}")
         try:
             parsed = json.loads(decision)
             tool_name = parsed["tool"]
             args = parsed.get("args",[])
 
             result = self.tools.call(tool_name,*args)
+            print(f"Tools Result: {result}")
             return result
         except Exception as e:
             error_msg = f"Error executing tool: {e}"
             return error_msg
+    
+    def run(self, user_input: str, max_steps:int=3):
+        original_input = user_input
+        for step in range(max_steps):
+            print(f"Step: {step+1} of {max_steps}")
+            decision = self.think(user_input)
+            
+            try:
+                decision_parsed = json.loads(decision)
+            except json.JSONDecodeError as e:
+                print(f"Could not parse decision: {e}")
+                user_input = f"Your response was not valid JSON.\nOriginal user request: {original_input}"
+            
+            if decision_parsed.get("done"):
+                print(f"Task complete\nAssistant Repose:{decision}")
+                return decision_parsed.get("summary")
+            
+            result = self.act(decision)
+            user_input = f"Original user request: {original_input}\nLast assistant response{decision}\nLast tool result: {result}. continue with original user request"
+
+        print("Loop complete. (max steps reached)")
+        return result
 ```
 
 ### Register tools and run a demo
@@ -204,7 +261,6 @@ class CodeReviewAgentWithTools:
 3. Ask the agent what to do given a user request and tools
 4. Ask the agent to act on the decision
 
-**NOTE:** Usually the above sequence of actions will run consecutively and you might have seen agent frameworks that have a single `run` or similar command. We are keeping things simple here to demonstrate concepts
 
 
 ```python
@@ -212,19 +268,17 @@ registry = ToolRegistry()
 
 # Register the tools we defined above
 registry.register("read_file", read_file)
-registry.register("analyze_code",analyze_code)
+registry.register("patch_file",patch_file)
+registry.register("print_review",print_review)
 
 agent = CodeReviewAgentWithTools(registry)
 
-user_request = "Please review the code in sample.py"
+user_request = "Review the code in sample.py and print the review"
 
+result = agent.run(user_input=user_request,max_steps=5)
 # We give the agent an observation (user request) to think about and give us a decision
-decision = agent.think(user_input=user_request)
-print(f"Agent Decision:\n{decision}")
 
-# We give the agent the decision to act on
-result = agent.act(decision)
-print(f"Tool Call Result:\n{result}")
+print(f"Result: {result}")
 
 ```
 
@@ -261,17 +315,21 @@ class CodeReviewAgentWithToolsHIL:
 
         Available tools:
         - read_file(filepath)
-        - analyze_code(code)
+        - patch_file(filepath, content)
+        - print_review(review: str)
 
-        Decide which tool is most appropriate based on the user input below.
-        Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}}  
+        Decide which tool is most appropriate based on the user input below if a tool is needed.
+        If a tool call is needed Reply ONLY with the tool call to make in JSON format {{"tool": "tool_name", "args": ["arg1", "arg2"]}} (e.g., {{"tool":"read_file", "args":["sample.py"]}}
+        Examples:
+        - read_file("main.py")
+        - patch_file(filepath, content)
+        - print_review(review: str)
 
-        Example:
-        {{"tool":"read_file", "args":["sample.py"]}}
+        If the task is complete respond with JSON {{"done: true, "summary:"The task is complete because"}} where the summary is the reason why the task is complete
 
         user input: {user_input}
         """
-
+        print(f"Calling LLM with:\n{"-"*10}\n{prompt}\n{"-"*20}")
         response = openai.responses.create(model=self.model, input=[{"role":"user","content":prompt}])
 
         return response.output_text
@@ -290,6 +348,30 @@ class CodeReviewAgentWithToolsHIL:
             except Exception as e:
                 error_msg = f"Error executing tool: {e}"
                 return error_msg
+        else:
+            return "Action cancelled by user"
+    
+    def run(self, user_input: str, max_steps:int=3):
+        original_input = user_input
+        for step in range(max_steps):
+            print(f"Step: {step+1} of {max_steps}")
+            decision = self.think(user_input)
+            
+            try:
+                decision_parsed = json.loads(decision)
+            except json.JSONDecodeError as e:
+                print(f"Could not parse decision: {e}")
+                user_input = f"Your response was not valid JSON.\nOriginal user request: {original_input}"
+            
+            if decision_parsed.get("done"):
+                print(f"Task complete\nAssistant Repose:{decision}")
+                return decision_parsed.get("summary")
+            
+            result = self.act(decision)
+            user_input = f"Original user request: {original_input}\nLast assistant response{decision}\nLast tool result: {result}. continue with original user request"
+
+        print("Loop complete. (max steps reached)")
+        return result
 ```
 
 
@@ -302,16 +384,12 @@ def divide(a,b):
 agent_hil = CodeReviewAgentWithToolsHIL(tool_registry=registry)
 user_request = f"Please review this code {code_snippet}"
 
-# We give the agent an observation (user request) to think about and give us a decision
-decision = agent_hil.think(user_input=user_request)
-print(f"Agent Decision: \n{decision}")
+result = agent_hil.run(user_request,max_steps=5)
 
-# We give the agent the decision to act on
-result=agent_hil.act(decision=decision)
-print(f"Tool Call Result:\n{result}")
+print(f"Result: {result}")
 ```
 
-**Full Source Code Here:**  [Agent Tasks Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-2-agent-tools.ipynb)
+**Full Source Code Here:**  [Agent Tools Jupyter Notebook](https://github.com/asanyaga/ai-agents-tutorial/blob/main/part-2-agent-tools.ipynb)
 
 ### What's next
 In the next part of this series we will give our agent memory.
