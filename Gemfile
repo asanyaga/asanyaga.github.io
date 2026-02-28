@@ -19,6 +19,7 @@ group :jekyll_plugins do
   gem "jekyll-feed", "~> 0.12"
   gem "jekyll-remote-theme"
   gem "jekyll-include-cache"    # Required by minimal-mistakes
+  gem "jekyll-seo-tag"
   gem "jekyll-sitemap"
 end
 

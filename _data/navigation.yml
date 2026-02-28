@@ -1,0 +1,11 @@
+main:
+  - title: "Home"
+    url: /
+  - title: "Tutorials"
+    url: /tutorials/
+  - title: "AI Strategy"
+    url: /ai-strategy/
+  - title: "Perspectives"
+    url: /perspectives/
+  - title: "About"
+    url: /about/
