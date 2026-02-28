@@ -1,7 +1,10 @@
 ---
 title:  "Observability and Debugging AI Agents"
 date:   2025-12-22 10:19:51 +0300
-categories: agents ai
+categories: tutorials
+tags: agents ai
+series: "From Prompts to Agents"
+series_order: 6
 ---
 
 As your AI Agent grows more sophisticated, handling multi step plans, maintaining memory and using multiple tools, understanding what it's doing and why becomes important.  

@@ -1,7 +1,10 @@
 ---
 title:  "From Prompts to Agents: Understanding the AI Agent Loop"
 date:   2025-11-03 17:19:51 +0300
-categories: agents ai
+categories: tutorials
+tags: agents ai
+series: "From Prompts to Agents"
+series_order: 1
 ---
 ## Introduction
 You have probably heard the term **AI Agent**, often mentioned, but not always clearly explained. In this tutorial series, we will demystify what AI agents really are. 

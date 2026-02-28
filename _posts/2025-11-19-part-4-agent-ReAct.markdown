@@ -1,7 +1,10 @@
 ---
 title:  "Agents That Think: Introducing the ReAct Pattern"
 date:   2025-11-19 10:35:51 +0300
-categories: agents ai
+categories: tutorials
+tags: agents ai
+series: "From Prompts to Agents"
+series_order: 4
 ---
 
 In our previous tutorials, we established the basic building blocks of an LLM agent. We implemented the **observe**,**think**,**act** loop, we added **tool use** and **memory**.  
