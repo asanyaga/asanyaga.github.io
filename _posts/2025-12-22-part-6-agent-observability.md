@@ -8,7 +8,7 @@ series_order: 6
 ---
 
 As your AI Agent grows more sophisticated, handling multi step plans, maintaining memory and using multiple tools, understanding what it's doing and why becomes important.  
-Without prooper observability, debugging agent failures feels like operating in the dark
+Without proper observability, debugging agent failures feels like operating in the dark
 
 I this tutorial, we will add instrumentation to our code review agent, covering:
 * **Structured logging** for every agent action
