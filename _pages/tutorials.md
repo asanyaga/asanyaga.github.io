@@ -1,11 +1,8 @@
 ---
 title: "Tutorials"
-layout: collection
+layout: single
 permalink: /tutorials/
-collection: posts
-entries_layout: list
 classes: wide
-taxonomy: tutorials
 excerpt: "Hands-on technical tutorials on building AI applications."
 ---
 
