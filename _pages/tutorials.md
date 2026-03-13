@@ -1,9 +1,9 @@
 ---
-title: "Tutorials"
+title: "Guides"
 layout: single
 permalink: /tutorials/
 classes: wide
-excerpt: "Hands-on technical tutorials on building AI applications."
+excerpt: "Hands-on guides based on things I'm building and learning."
 ---
 
 {% assign tutorials = site.posts | where_exp: "post", "post.categories contains 'tutorials'" %}

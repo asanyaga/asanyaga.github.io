@@ -12,14 +12,14 @@ I help businesses understand and integrate AI into their products and operations
 ## What I do
 
 - **AI Strategy & Integration** : Helping technical and business leaders evaluate where AI fits in their stack, what to build vs. buy, and how to avoid expensive dead ends.
-- **Hands-on Engineering** : Building AI agents, LLM-powered features, and the infrastructure around them. I write about what I build in the [tutorials](/tutorials/) section of this site.
+- **Hands-on Engineering** : Building AI agents, LLM-powered features, and the infrastructure around them. I write about what I'm learning in the [guides](/tutorials/) section of this site.
 - **Product Thinking** : Bridging the gap between what's technically possible with AI and what actually solves a user problem.
 
 ## This blog
 
 I write here to think clearly and to share what I learn. You'll find three kinds of posts:
 
-- **[Tutorials](/tutorials/)** : Step-by-step technical guides. Currently a series on building AI agents from scratch.
+- **[Guides](/tutorials/)** : Hands-on guides based on things I'm building and learning.
 - **[AI Strategy](/ai-strategy/)** : Guides for decision-makers navigating AI adoption. Separating hype from practical concerns.
 - **[Perspectives](/perspectives/)** : Opinion pieces on AI and the future of work.
 

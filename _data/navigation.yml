@@ -1,7 +1,7 @@
 main:
   - title: "Home"
     url: /
-  - title: "Tutorials"
+  - title: "Guides"
     url: /tutorials/
   - title: "AI Strategy"
     url: /ai-strategy/

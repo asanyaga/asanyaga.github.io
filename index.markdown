@@ -6,10 +6,10 @@ header:
 excerpt: "Practical AI strategy and engineering for businesses that want to move beyond the hype."
 
 feature_row:
-  - title: "Tutorials"
-    excerpt: "Hands-on technical guides. Currently a series on building AI agents from scratch in Python."
+  - title: "Guides"
+    excerpt: "Hands-on guides based on things I'm building and learning."
     url: /tutorials/
-    btn_label: "Read Tutorials"
+    btn_label: "Read Guides"
     btn_class: "btn--primary"
   - title: "AI Strategy"
     excerpt: "Guides for technical leaders navigating AI adoption. Separating hype from practical concerns."
