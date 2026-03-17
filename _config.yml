@@ -30,6 +30,7 @@ twitter_username: asanyaga
 github_username: asanyaga
 
 # Build settings
+future: true
 # theme: minima
 remote_theme: "mmistakes/minimal-mistakes@4.27.3"
 plugins:
