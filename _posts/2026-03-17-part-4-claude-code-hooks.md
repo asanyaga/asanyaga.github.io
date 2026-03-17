@@ -1,5 +1,5 @@
 ---
-title: "Hooks: When You Need Guarantees, Not Suggestions"
+title: "Hooks: Automated Enforcement for Your Workflow"
 date: 2026-03-17 11:00:00 +0300
 categories: tutorials
 tags: claude-code cli

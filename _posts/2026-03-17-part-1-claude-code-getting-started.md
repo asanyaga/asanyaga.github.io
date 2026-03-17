@@ -1,5 +1,5 @@
 ---
-title: "Jump In, Break Things, Learn Why Configuration Matters"
+title: "Your First Session: What Works and What Drifts"
 date: 2026-03-17 08:00:00 +0300
 categories: tutorials
 tags: claude-code cli
