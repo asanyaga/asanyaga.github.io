@@ -4,3 +4,28 @@
 <link rel="shortcut icon" href="/assets/images/favicon.ico" />
 <link rel="apple-touch-icon" sizes="180x180" href="/assets/images/apple-touch-icon.png" />
 <link rel="manifest" href="/assets/images/site.webmanifest" />
+
+<!-- JSON-LD Person structured data (homepage only) -->
+{% if page.layout == "splash" %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Asa Nyaga",
+  "jobTitle": "AI Engineer | Product Manager",
+  "url": "https://asanyaga.com",
+  "image": "https://asanyaga.com/assets/images/bio-photo.jpg",
+  "email": "asa.nyaga@gmail.com",
+  "address": {
+    "@type": "PostalAddress",
+    "addressLocality": "Nairobi",
+    "addressCountry": "KE"
+  },
+  "sameAs": [
+    "https://github.com/asanyaga",
+    "https://x.com/asanyaga",
+    "https://www.linkedin.com/in/asa-nyaga-kenya"
+  ]
+}
+</script>
+{% endif %}
