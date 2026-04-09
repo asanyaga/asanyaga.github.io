@@ -77,7 +77,7 @@ Fully autonomous AI agents make for great demos and terrible production systems,
 - **What's the escalation path when the agent is uncertain?** Agents that silently guess when they should ask for help are a liability.
 - **How will you handle failures gracefully?** The agent will make mistakes. Your design should assume this.
 
-The goal isn't to eliminate human involvement; it's to amplify human judgment by handling routine work automatically and surfacing the decisions that actually need attention.
+The goal is to amplify human judgment by handling routine work automatically and surfacing the decisions that actually need attention.
 
 ## 7. Plan Your Tool and Integration Architecture
 
@@ -94,7 +94,7 @@ Each tool you add increases the agent's capability but also its attack surface a
 
 AI agents introduce a category of risk that most organizations haven't dealt with before: software that makes decisions and takes actions with a degree of autonomy. Key concerns include:
 
-- **Prompt injection**: Malicious inputs that manipulate the agent into taking unintended actions. This is not a theoretical risk; it's well-documented and difficult to fully prevent.
+- **Prompt injection**: Malicious inputs that manipulate the agent into taking unintended actions. This is a well-documented, practical risk, and it's difficult to fully prevent.
 - **Data leakage**: Agents that access sensitive data can inadvertently expose it in responses or logs.
 - **Excessive authority**: An agent with broad permissions and weak guardrails is a security incident waiting to happen.
 - **Supply chain risk**: Your agent likely depends on third-party model APIs, tool integrations, and libraries, each with their own vulnerability surface.
@@ -146,7 +146,7 @@ AI agents are notoriously difficult to debug. When an agent produces a bad outpu
 - **Capture the agent's reasoning chain**: Many failures are reasoning failures, not code failures.
 - **Monitor for drift**: Agent behavior can change as underlying models are updated by providers.
 
-Tools like LangSmith, Arize, and open-source alternatives like Phoenix provide purpose-built observability for LLM-powered systems. This is not optional infrastructure; it's essential for operating an agent in production.
+Tools like LangSmith, Arize, and open-source alternatives like Phoenix provide purpose-built observability for LLM-powered systems. This is essential infrastructure for operating an agent in production.
 
 ## 13. Prepare Your Organization
 
@@ -158,7 +158,7 @@ Technical readiness is only half the equation. Organizational readiness matters 
 - **Governance and compliance**: Who is accountable when the agent makes a mistake? How does this fit into your existing compliance framework?
 - **Expectations management**: Executives who've seen impressive demos may expect magic. Set realistic expectations about what version one will and won't be able to do.
 
-The most common failure mode for AI agent projects isn't technical; it's organizational. A mediocre agent with strong organizational buy-in will outperform a brilliant agent that nobody trusts or uses.
+The most common failure mode for AI agent projects is organizational, not technical. A mediocre agent with strong organizational buy-in will outperform a brilliant agent that nobody trusts or uses.
 
 ## 14. Start Small, Learn Fast
 
