@@ -1,5 +1,5 @@
 ---
-title: "AI Fatigue Is Real. And You're Not Imagining It"
+title: "AI Fatigue Is Real and You're Not Imagining It"
 date: 2026-04-23 08:00:00 +0300
 categories: perspectives
 tags: ai perspectives wellbeing
