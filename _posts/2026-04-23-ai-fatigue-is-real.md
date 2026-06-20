@@ -80,6 +80,6 @@ AI is a real technological shift. It's moving fast. Your discomfort with that is
 
 You don't have to learn everything. You don't have to feel great about all of it. You don't have to be doing more than you're doing.
 
-You just have to figure out what's actually useful for you — at a pace that doesn't burn you out.
+You just have to figure out what's actually useful for you - at a pace that doesn't burn you out.
 
 It's also probably the only pace that works.

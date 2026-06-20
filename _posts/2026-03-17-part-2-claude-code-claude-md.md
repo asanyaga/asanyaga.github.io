@@ -7,13 +7,13 @@ series: "Building With Claude Code"
 series_order: 2
 ---
 
-In the last post, we built Markd — a bookmarks API with a CLI — by just prompting Claude Code in an empty folder. It worked. Everything ran. But if you looked closely, the codebase had drift: inconsistent error handling, response shapes that varied between endpoints, and decisions Claude made silently that you never discussed.
+In the last post, we built Markd - a bookmarks API with a CLI - by just prompting Claude Code in an empty folder. It worked. Everything ran. But if you looked closely, the codebase had drift: inconsistent error handling, response shapes that varied between endpoints, and decisions Claude made silently that you never discussed.
 
 Today we fix that with a single file.
 
 ### The file Claude reads first
 
-When Claude Code opens a project, one of the first things it does is look for `CLAUDE.md` files. If it finds one at the root of your project, it reads it before doing anything else. Think of it as the onboarding document you'd hand a new developer on their first day — except Claude re-reads it every single session.
+When Claude Code opens a project, one of the first things it does is look for `CLAUDE.md` files. If it finds one at the root of your project, it reads it before doing anything else. Think of it as the onboarding document you'd hand a new developer on their first day and Claude re-reads it every single session.
 
 Let's write one and immediately see the difference.
 
@@ -28,7 +28,7 @@ future code is consistent. Look at the existing code and help me
 draft one.
 ```
 
-Claude will scan your files and propose something. It'll probably be decent but too long — a common first instinct is to document *everything*. That's the wrong move, and we'll talk about why in a moment.
+Claude will scan your files and propose something. It'll probably be decent but too long - a common first instinct is to document *everything*. That's the wrong move, and we'll talk about why in a moment.
 
 Instead of accepting whatever Claude drafts wholesale, let's think about what actually belongs here. Open a `CLAUDE.md` at the project root and write it yourself, using what Claude found as input. Here's roughly what a good one looks like for Markd at this stage:
 
