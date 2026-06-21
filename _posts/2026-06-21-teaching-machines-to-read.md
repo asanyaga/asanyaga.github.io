@@ -12,15 +12,13 @@ Ask someone to open an invoice and find the total due. They'll have it in second
 
 Now try to teach it to a machine.
 
-Intelligent Document Processing (IDP) is the discipline of automating what human readers do instinctively: reading a document, understanding what it is, and extracting meaning from it. IDP breaks into five stages: ingestion, parsing, classification, extraction, and indexing for retrieval. Each hides a layer of complexity that only becomes visible when you try to replicate it. Replicating that process, stage by stage, is what makes document automation so persistently difficult.
+Intelligent Document Processing (IDP) is the discipline of automating what human readers do instinctively: reading a document, understanding what it is, and extracting meaning from it. IDP breaks into five stages: intake, parsing, classification, extraction, and indexing for retrieval. Each hides a layer of complexity that only becomes visible when you try to replicate it. Replicating that process, stage by stage, is what makes document automation so persistently difficult.
 
 ---
 
-## Ingestion: Any Human Can Open a Document
+## Intake: Every Format Is a Different Problem
 
-Hand a person a PDF, a printout, a fax, or a Word file on screen, and they start reading. The format is invisible to them. Their eyes find the text, their brain handles the rest.
-
-A machine has no such flexibility. Every format is a completely different technical artifact. A native PDF stores instructions for where to render shapes on a page: not words, not sentences, not paragraphs as a computer would recognise them. A Word document has structural markup, but it varies by version, by author habits, and by whether styles were used consistently or ignored. And a scanned document isn't a document at all from a machine's perspective. It's a photograph, with no text in it until an OCR engine runs and attempts to reconstruct what the camera captured, character by character, from pixels.
+Every format a document arrives in is a completely different technical artifact. A native PDF stores instructions for where to render shapes on a page: not words, not sentences, not paragraphs as a computer would recognise them. A Word document has structural markup, but it varies by version, by author habits, and by whether styles were used consistently or ignored. A scanned document isn't a document at all from a machine's perspective. It's a photograph, with no text in it until an OCR engine runs and attempts to reconstruct what the camera captured, character by character, from pixels.
 
 This is why production IDP systems don't have a single intake path. They route documents by format: native PDFs to one parser, scanned images to an OCR pipeline, Office files to another handler entirely, then reconcile the outputs into something consistent. The variation within each format means even that routing logic needs to account for exceptions. Get this wrong, and every stage downstream is working from incomplete or corrupted input, often without knowing it.
 
