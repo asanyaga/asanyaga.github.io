@@ -4,7 +4,6 @@
 Jekyll blog hosted on GitHub Pages at https://asanyaga.com (repo: asanyaga/asanyaga.github.io).
 
 ## Git workflow
-- Claude Code works on a separate branch (worktree) each session — never commit directly to `main`.
 - When a task is complete and the user confirms they are satisfied, do the following in order:
   1. Commit all changes with a clear commit message.
   2. Push the branch to GitHub (`git push -u origin <branch>`).
