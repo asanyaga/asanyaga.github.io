@@ -10,7 +10,7 @@ Maybe you've sent an embarrassing text because autocomplete finished a sentence 
 
 That was a small version. The bigger versions are showing up now.
 
-Someone lets an AI tool tidy up their CV and it adds a skill they do not have, and the first they hear of it is in the interview.  
+Someone lets an AI tool tidy up their CV, it adds a skill they do not have, and the first they hear of it is in the interview.  
 
 Canadian politician Bill Oliver read an AI response aloud during a speech, including the words, "Here's a more natural, flowing version of that section…" The moment was recorded and spread online. Ouch.
 
@@ -20,9 +20,11 @@ These are the kinds of mistakes we risk when we accept automated output without 
 
 ## What this is
 
-Researchers call it automation bias. When a machine makes a suggestion, people tend to accept it without checking, even when they would have caught the mistake on their own. It shows up in two ways. You skip a check because the machine did not flag anything, or the machine produces something wrong and you go along with it.
+Researchers call it automation bias. When a machine makes a suggestion, people tend to accept it without checking, even when they would have caught the mistake on their own.  
 
 The term is from the 1990s. It was a problem with plane autopilots and hospital systems long before it was a problem with chatbots. What has changed is how many people now work with a machine that suggests things all day.
+
+It shows up in two ways. You skip a check because the machine did not flag anything, or the machine produces something wrong and you go along with it.
 
 ## Why it happens
 
