@@ -28,11 +28,11 @@ It shows up in two ways. You skip a check because the machine did not flag anyth
 
 ## Why it happens
 
-Most automation we are used to just works, so we learned to trust automated output. Some of that trust is understandable. We're used to tools that reliably handle narrow tasks, like a calculator applying math rules.
+Most automation we are used to just works, so we learned to trust automated output. Some of that trust is understandable. We're used to tools that reliably handle narrow tasks. For instance, a calculator applying math rules to give you a result.
 
 Generative AI works differently. It produces content using learned statistical patterns. It can give us useful answers, but also convincing nonsense. Clear, polished writing and a confident tone don't make a claim true.
 
-When you create something yourself, you make decisions and correct mistakes as you go. When an AI creates it, that step is gone. Reviewing someone else's work carefully, hunting for what is wrong, is a different skill from creating. Most of us have never had to do it at this volume or speed.
+When you create something yourself, you make decisions and correct mistakes as you go. When an AI creates it, that step is gone. Reviewing AI generated work carefully, hunting for what is wrong, is a different skill from creating. Most of us have never had to do it at this volume or speed.
 
 Then there's the volume. A request for a short answer produces pages of explanation. Every extra paragraph adds something to check. It's easy to start skimming.
 
