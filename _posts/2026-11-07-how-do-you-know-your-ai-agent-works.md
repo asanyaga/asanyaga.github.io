@@ -79,7 +79,3 @@ That's it. That's a working eval set. You can grow it into something more automa
 Evals don't guarantee your agent will never fail. Nothing does. What they give you is honesty: a clear picture of how often it succeeds, where it breaks, and whether your changes are making it better or worse. That's the difference between a demo that happens to work on the questions you thought to ask and a system you'd stake your name on.
 
 So before you ship the next one, it's worth asking: how are you currently deciding whether your agent is good enough? If the answer is "it worked when I tried it," you don't yet know.
-
----
-
-*This post is an expanded version of an article I first published on [LinkedIn](https://www.linkedin.com/pulse/how-do-you-know-your-ai-agent-works-asa-nyaga-1opkf).*

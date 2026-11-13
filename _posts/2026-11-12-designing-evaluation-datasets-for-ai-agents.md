@@ -248,7 +248,3 @@ These are all approaches to building evaluators, also called graders. We'll look
 For now, the main point is simple: a useful evaluation dataset is not just a collection of questions an agent can answer. It's a collection of situations that help us discover what the agent can and cannot reliably do.
 
 The dataset defines what we test. The evaluators determine how we judge the results. And the quality of our evaluations starts with the quality of the situations we choose to test.
-
----
-
-*This post is adapted from an article I first published on [LinkedIn](https://www.linkedin.com/pulse/designing-evaluation-datasets-ai-agents-asa-nyaga-a6pdf).*
